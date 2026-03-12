@@ -385,6 +385,58 @@
   function extractChapterHtml(fullMd, book, chNum) {
     const lines = fullMd.split('\n');
     const re = new RegExp(`^##\\s+${escRe(book)}\\s+${chNum}(?:\\s|$|\\s*[—\\-])`, 'i');
+
+    // ── Find this chapter's start line ──────────────────────────
+    let start = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (re.test(lines[i])) { start = i; break; }
+    }
+
+    if (start === -1) {
+      return `<p style="color:#888;font-style:italic">
+        The summary for ${esc(book)} ${chNum} hasn't been written yet. Check back soon!
+      </p>`;
+    }
+
+    // ── Extract this chapter's lines ────────────────────────────
+    const chLines = [lines[start]];
+    for (let i = start + 1; i < lines.length; i++) {
+      if (/^##\s/.test(lines[i]) && !/^###/.test(lines[i])) break;
+      chLines.push(lines[i]);
+    }
+
+    // ── Always prepend Introduction block ───────────────────────
+    const introLines = [];
+    let inIntro = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (/^## Introduction/i.test(lines[i])) { inIntro = true; }
+      if (inIntro) {
+        if (/^## /i.test(lines[i]) && !/^## Introduction/i.test(lines[i])) break;
+        introLines.push(lines[i]);
+      }
+    }
+
+    // ── Find Final Summary block if it exists ───────────────────
+    const finalLines = [];
+    let inFinal = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (/^## Final Summary/i.test(lines[i])) { inFinal = true; }
+      if (inFinal) {
+        if (/^## /i.test(lines[i]) && !/^## Final Summary/i.test(lines[i])) break;
+        finalLines.push(lines[i]);
+      }
+    }
+
+    // ── Assemble: Intro + Chapter + Final Summary ────────────────
+    let parts = [];
+    if (introLines.length) parts.push(introLines.join('\n'));
+    parts.push(chLines.join('\n'));
+    if (finalLines.length) parts.push(finalLines.join('\n'));
+
+    return marked.parse(parts.join('\n\n---\n\n'));
+  }
+    const lines = fullMd.split('\n');
+    const re = new RegExp(`^##\\s+${escRe(book)}\\s+${chNum}(?:\\s|$|\\s*[—\\-])`, 'i');
     let start = -1;
     for (let i=0;i<lines.length;i++) { if (re.test(lines[i])) { start=i; break; } }
     if (start===-1) return `<p style="color:#888;font-style:italic">The summary for ${esc(book)} ${chNum} hasn't been written yet. Check back soon!</p>`;
