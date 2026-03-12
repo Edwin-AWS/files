@@ -19,7 +19,7 @@ The narrative is rich with theological significance, portraying God as sovereign
 
 ---
 
-## Chapter 1 — The Creation
+## Genesis 1 — The Creation
 
 ### Summary
 
@@ -41,7 +41,7 @@ Just like fish can't survive out of water and trees can't survive out of soil, h
 
 ---
 
-## Chapter 2 — The Creation of Man and Woman
+## Genesis 2 — The Creation of Man and Woman
 
 ### Summary
 
@@ -63,7 +63,7 @@ In life, we can strive to cultivate healthy relationships, understanding that we
 
 ---
 
-## Chapter 3 — The Fall of Man
+## Genesis 3 — The Fall of Man
 
 ### Summary
 
@@ -87,7 +87,7 @@ Despite the seriousness of their sin, God promises a Saviour — the seed of the
 
 ---
 
-## Chapter 4 — Cain and Abel
+## Genesis 4 — Cain and Abel
 
 ### Summary
 
@@ -105,7 +105,7 @@ In practical terms, we can examine our hearts for jealousy or resentment that ma
 
 ---
 
-## Chapter 5 — The Generations of Adam
+## Genesis 5 — The Generations of Adam
 
 ### Summary
 
@@ -125,7 +125,7 @@ Making choices that align with God's will can establish a legacy of faith that o
 
 ---
 
-## Chapter 6 — The Wickedness of Humanity
+## Genesis 6 — The Wickedness of Humanity
 
 ### Summary
 
@@ -145,7 +145,7 @@ Noah's obedience reminds us that responding to God's calling can lead to salvati
 
 ---
 
-## Chapter 7 — The Flood
+## Genesis 7 — The Flood
 
 ### Summary
 
@@ -163,7 +163,7 @@ In practical terms, it can inspire us to trust God's provision when faced with d
 
 ---
 
-## Chapter 8 — The Flood Subsides
+## Genesis 8 — The Flood Subsides
 
 ### Summary
 
@@ -179,7 +179,7 @@ In daily practice, we can look for opportunities to celebrate God's faithfulness
 
 ---
 
-## Chapter 9 — The Covenant with Noah
+## Genesis 9 — The Covenant with Noah
 
 ### Summary
 
@@ -199,7 +199,7 @@ In our daily lives, we are prompted to appreciate life as a gift from God and up
 
 ---
 
-## Chapter 10 — The Table of Nations
+## Genesis 10 — The Table of Nations
 
 ### Summary
 
@@ -219,7 +219,7 @@ In our practical lives, we can actively seek to bridge cultural gaps and learn f
 
 ---
 
-## Chapter 11 — The Tower of Babel
+## Genesis 11 — The Tower of Babel
 
 ### Summary
 
@@ -239,7 +239,7 @@ The chapter concludes with a genealogy that traces the lineage of Shem leading t
 
 ---
 
-## Chapter 12 — The Call of Abram
+## Genesis 12 — The Call of Abram
 
 ### Summary
 
@@ -259,7 +259,7 @@ The chapter also depicts Abram's initial struggles with deception in Egypt *(v.1
 
 ---
 
-## Chapter 13 — Abram and Lot Separate
+## Genesis 13 — Abram and Lot Separate
 
 ### Summary
 
@@ -279,7 +279,7 @@ God reaffirms His covenant with Abram after the separation *(v.14–17)*, assuri
 
 ---
 
-## Chapter 14 — Abram Rescues Lot
+## Genesis 14 — Abram Rescues Lot
 
 ### Summary
 
@@ -303,7 +303,7 @@ The encounter with Melchizedek *(v.18–20)* reveals God's acknowledgment of Abr
 
 ---
 
-## Chapter 15 — God's Covenant with Abram
+## Genesis 15 — God's Covenant with Abram
 
 ### Summary
 
@@ -323,7 +323,7 @@ God also reveals the future hardships that Abram's descendants will face *(v.13�
 
 ---
 
-## Chapter 16 — Hagar and Ishmael
+## Genesis 16 — Hagar and Ishmael
 
 ### Summary
 
@@ -351,7 +351,7 @@ Reflect on areas in your life where you feel impatient or frustrated with God's 
 
 ---
 
-## Chapter 17 — The Covenant of Circumcision
+## Genesis 17 — The Covenant of Circumcision
 
 ### Summary
 
@@ -375,7 +375,7 @@ The chapter concludes with Abraham obediently fulfilling God's command and circu
 
 ---
 
-## Chapter 18 — The Three Visitors
+## Genesis 18 — The Three Visitors
 
 ### Summary
 
@@ -395,7 +395,7 @@ The conversation shifts to God's impending judgment on Sodom and Gomorrah *(Gene
 
 ---
 
-## Chapter 19 — Sodom and Gomorrah
+## Genesis 19 — Sodom and Gomorrah
 
 ### Summary
 
@@ -419,7 +419,7 @@ The destruction of Sodom and Gomorrah follows *(Genesis 19:24–25)*, serving as
 
 ---
 
-## Chapter 20 — Abraham and Abimelech
+## Genesis 20 — Abraham and Abimelech
 
 ### Summary
 
@@ -443,7 +443,7 @@ God heals Abimelech and his household, underscoring the notion that God's blessi
 
 ---
 
-## Chapter 21 — The Birth of Isaac
+## Genesis 21 — The Birth of Isaac
 
 ### Summary
 
@@ -467,7 +467,7 @@ Abraham forms a treaty with Abimelech *(Genesis 21:22–34)*, emphasising the im
 
 ---
 
-## Chapter 22 — The Binding of Isaac
+## Genesis 22 — The Binding of Isaac
 
 ### Summary
 
@@ -491,7 +491,7 @@ God reaffirms His promises to Abraham, cementing his role as the father of many 
 
 ---
 
-## Chapter 23 — The Death of Sarah
+## Genesis 23 — The Death of Sarah
 
 ### Summary
 
@@ -515,7 +515,7 @@ After acquiring the land *(Genesis 23:19–20)*, this cave becomes Abraham's per
 
 ---
 
-## Chapter 24 — Isaac and Rebekah
+## Genesis 24 — Isaac and Rebekah
 
 ### Summary
 
@@ -539,7 +539,7 @@ The chapter concludes with the servant praising God for His faithfulness in answ
 
 ---
 
-## Chapter 25 — Abraham's Death and the Birth of Esau and Jacob
+## Genesis 25 — Abraham's Death and the Birth of Esau and Jacob
 
 ### Summary
 
@@ -563,7 +563,7 @@ The chapter ends with the birth of Esau and Jacob *(v.22–34)*, emphasising the
 
 ---
 
-## Chapter 26 — Isaac and Abimelech
+## Genesis 26 — Isaac and Abimelech
 
 ### Summary
 
@@ -587,7 +587,7 @@ Reflect on how our choices and those of our loved ones often affect our familial
 
 ---
 
-## Chapter 27 — Jacob Receives Isaac's Blessing
+## Genesis 27 — Jacob Receives Isaac's Blessing
 
 ### Summary
 
@@ -611,7 +611,7 @@ The chapter concludes with Esau's despair and desire for revenge *(v.30–46)*. 
 
 ---
 
-## Chapter 28 — Jacob's Dream at Bethel
+## Genesis 28 — Jacob's Dream at Bethel
 
 ### Summary
 
@@ -633,7 +633,7 @@ Jacob's response also exemplifies a practical approach to faith: recognising the
 
 ---
 
-## Chapter 29 — Jacob Meets Rachel
+## Genesis 29 — Jacob Meets Rachel
 
 ### Summary
 
@@ -657,7 +657,7 @@ The chapter concludes with Leah's struggles for love and attention *(v.31–35)*
 
 ---
 
-## Chapter 30 — Jacob's Children
+## Genesis 30 — Jacob's Children
 
 ### Summary
 
@@ -681,7 +681,7 @@ Verse 22 marks a turning point with God remembering Rachel and opening her womb,
 
 ---
 
-## Chapter 31 — Jacob Flees from Laban
+## Genesis 31 — Jacob Flees from Laban
 
 ### Summary
 
@@ -705,7 +705,7 @@ There is a confrontation between Laban and Jacob *(v.22–55)*. This dynamic ill
 
 ---
 
-## Chapter 32 — Jacob Wrestles with God
+## Genesis 32 — Jacob Wrestles with God
 
 ### Summary
 
@@ -729,7 +729,7 @@ The chapter ends with Jacob's emotional reunion with Esau *(v.33–35)*. This po
 
 ---
 
-## Chapter 33 — Jacob and Esau Reunite
+## Genesis 33 — Jacob and Esau Reunite
 
 ### Summary
 
@@ -753,7 +753,7 @@ The conclusion of the chapter emphasises the journey from conflict to peace, rea
 
 ---
 
-## Chapter 34 — Dinah and the Shechemites
+## Genesis 34 — Dinah and the Shechemites
 
 ### Summary
 
@@ -777,7 +777,7 @@ The chapter concludes with Jacob's concern over the consequences of the brothers
 
 ---
 
-## Chapter 35 — Jacob Returns to Bethel
+## Genesis 35 — Jacob Returns to Bethel
 
 ### Summary
 
@@ -801,7 +801,7 @@ The chapter also notes the death of Rachel during childbirth *(v.16–20)*. This
 
 ---
 
-## Chapter 36 — The Descendants of Esau
+## Genesis 36 — The Descendants of Esau
 
 ### Summary
 
@@ -825,7 +825,7 @@ In our daily lives, recognising the diversity of experiences can broaden our per
 
 ---
 
-## Chapter 37 — Joseph and His Brothers
+## Genesis 37 — Joseph and His Brothers
 
 ### Summary
 
@@ -849,7 +849,7 @@ The chapter serves as a poignant reminder of the complexities of family dynamics
 
 ---
 
-## Chapter 38 — Judah and Tamar
+## Genesis 38 — Judah and Tamar
 
 ### Summary
 
@@ -869,7 +869,7 @@ This chapter teaches us about the consequences of our actions and the importance
 
 ---
 
-## Chapter 39 — Joseph and Potiphar's Wife
+## Genesis 39 — Joseph and Potiphar's Wife
 
 ### Summary
 
@@ -889,7 +889,7 @@ This story calls us to remain steadfast in our faith and values even when faced 
 
 ---
 
-## Chapter 40 — Joseph Interprets Dreams in Prison
+## Genesis 40 — Joseph Interprets Dreams in Prison
 
 ### Summary
 
@@ -905,7 +905,7 @@ We can learn from Joseph's reliance on God during the waiting periods in our liv
 
 ---
 
-## Chapter 41 — Joseph Interprets Pharaoh's Dreams
+## Genesis 41 — Joseph Interprets Pharaoh's Dreams
 
 ### Summary
 
@@ -925,7 +925,7 @@ This chapter illustrates that God can elevate us in unexpected ways. We should b
 
 ---
 
-## Chapter 42 — Joseph's Brothers Go to Egypt
+## Genesis 42 — Joseph's Brothers Go to Egypt
 
 ### Summary
 
@@ -945,7 +945,7 @@ This chapter reminds us of the importance of facing our past choices. While it c
 
 ---
 
-## Chapter 43 — The Brothers Return to Egypt
+## Genesis 43 — The Brothers Return to Egypt
 
 ### Summary
 
@@ -959,7 +959,7 @@ This chapter reminds us of the importance of family bonds and the healing power 
 
 ---
 
-## Chapter 44 — Joseph Tests His Brothers
+## Genesis 44 — Joseph Tests His Brothers
 
 ### Summary
 
@@ -979,7 +979,7 @@ Joseph's test shows us the importance of selflessness and sacrifice for loved on
 
 ---
 
-## Chapter 45 — Joseph Reveals Himself
+## Genesis 45 — Joseph Reveals Himself
 
 ### Summary
 
@@ -999,7 +999,7 @@ This chapter illustrates the transformative power of forgiveness and how we can 
 
 ---
 
-## Chapter 46 — Jacob's Family Goes to Egypt
+## Genesis 46 — Jacob's Family Goes to Egypt
 
 ### Summary
 
@@ -1019,7 +1019,7 @@ This chapter calls attention to the value of family heritage and the support we 
 
 ---
 
-## Chapter 47 — Jacob Blesses Pharaoh
+## Genesis 47 — Jacob Blesses Pharaoh
 
 ### Summary
 
@@ -1039,7 +1039,7 @@ This chapter teaches us about responsible stewardship and leadership during chal
 
 ---
 
-## Chapter 48 — Jacob Blesses Ephraim and Manasseh
+## Genesis 48 — Jacob Blesses Ephraim and Manasseh
 
 ### Summary
 
@@ -1059,7 +1059,7 @@ The principle of God's providence and His ways of choosing those who might be ov
 
 ---
 
-## Chapter 49 — Jacob's Blessing of His Sons
+## Genesis 49 — Jacob's Blessing of His Sons
 
 ### Summary
 
@@ -1079,7 +1079,7 @@ Build integrity and character, knowing your actions influence others and future 
 
 ---
 
-## Chapter 50 — The Death of Jacob and Joseph
+## Genesis 50 — The Death of Jacob and Joseph
 
 ### Summary
 
