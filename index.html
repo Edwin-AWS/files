@@ -424,9 +424,9 @@
       }
     }
 
-    // Assemble: Intro + Chapter + Final Summary
+    // Assemble: Intro (chapter 1 only) + Chapter + Final Summary
     const parts = [];
-    if (introLines.length) parts.push(introLines.join('\n'));
+    if (chNum === 1 && introLines.length) parts.push(introLines.join('\n'));
     parts.push(chLines.join('\n'));
     if (finalLines.length) parts.push(finalLines.join('\n'));
 
