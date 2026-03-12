@@ -388,6 +388,8 @@ function extractChapterHtml(fullMd, book, chNum) {
    const re = new RegExp(
   `^##\\s+${escRe(book)}\\s+${chNum}(?:\\s|$|\\s*[—\\-])`, 'i'
 );
+console.log('Regex:', re);
+console.log('First 5 ## lines:', lines.filter(l => l.startsWith('##')).slice(0,5));
 
     // ── Find this chapter's start line ──────────────────────────
     let start = -1;
