@@ -1,5 +1,5 @@
 // Bible Summaries PWA — Service Worker
-const CACHE_NAME = 'bible-summaries-v4';
+const CACHE_NAME = 'bible-summaries-v5';
 
 const APP_SHELL = [
   './',
@@ -9,6 +9,9 @@ const APP_SHELL = [
   './icon-512.png',
   './marked.min.js',
   './version.json',
+  './bible/kjv.json',
+  './bible/asv.json',
+  './bible/web.json',
   './summaries/Genesis.md',
   './summaries/Exodus.md',
   './summaries/Leviticus.md',
@@ -42,14 +45,12 @@ self.addEventListener('activate', event => {
 
 // Fetch: network-first, fall back to cache
 self.addEventListener('fetch', event => {
-  // Always fetch version.json fresh so we detect updates
   if (event.request.url.includes('version.json')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
-
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -61,9 +62,4 @@ self.addEventListener('fetch', event => {
       })
       .catch(() => caches.match(event.request))
   );
-});
-
-// Listen for message from app to skip waiting
-self.addEventListener('message', event => {
-  if (event.data === 'skipWaiting') self.skipWaiting();
 });

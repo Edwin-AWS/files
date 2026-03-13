@@ -34,17 +34,14 @@
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Lora',Georgia,serif;height:100vh;display:flex;flex-direction:column;background:var(--bg-primary);color:var(--text-primary);transition:background .3s,color .3s;overflow:hidden;}
 
-    /* Top bar */
     .topbar{background:var(--accent);color:#fff;padding:10px 16px;border-bottom:3px solid var(--gold);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px;}
     .menu-btn{background:var(--gold);color:var(--accent);border:none;padding:8px 14px;cursor:pointer;border-radius:6px;font-size:13px;font-weight:bold;white-space:nowrap;transition:opacity .2s;}
     .menu-btn:hover{opacity:.85;}
 
-    /* Chalkboard */
     .chalkboard{flex:1;margin:0 10px;padding:8px 16px;background:radial-gradient(circle at top left,#2a2a2a,#111);border:1px solid #444;border-radius:8px;text-align:center;font-family:'Permanent Marker',cursive;color:#fff;}
     .chalkboard h1{font-size:clamp(10px,1.6vw,20px);font-weight:normal;margin-bottom:2px;}
     .chalkboard p{font-size:clamp(8px,1vw,12px);font-style:italic;color:#ccc;}
 
-    /* View toggle */
     .view-toggle{display:flex;gap:4px;background:#0d1a26;border-radius:8px;padding:4px;flex-shrink:0;}
     .view-toggle button{background:transparent;color:#aaa;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;transition:all .2s;white-space:nowrap;}
     .view-toggle button.active{background:var(--gold);color:var(--accent);}
@@ -52,7 +49,6 @@
     .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
     .icon-btn{background:transparent;border:none;cursor:pointer;font-size:20px;padding:4px;}
 
-    /* Dropdown */
     .menu-wrapper{position:relative;}
     .dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;color:#000;border:1px solid #ccc;min-width:250px;max-height:450px;overflow-y:auto;z-index:9999;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);}
     .dropdown.open{display:block;}
@@ -83,7 +79,6 @@
     body.dark-mode .chapter-list li{color:#888;}
     body.dark-mode .chapter-list li:hover{background:#2a2a2a;color:#fff;}
 
-    /* Content */
     .content{flex:1;display:flex;overflow:hidden;min-height:0;}
     .left{width:100%;padding:24px 28px;background:var(--bg-primary);overflow-y:auto;transition:width .4s cubic-bezier(.4,0,.2,1),padding .4s,opacity .3s;}
     .left.split{width:50%;border-right:1px solid var(--border-color);}
@@ -92,21 +87,17 @@
     .right.split{width:50%;padding:24px 28px;opacity:1;}
     .right.full{width:100%;padding:24px 28px;opacity:1;}
 
-    /* Controls */
     .controls{margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
     .controls label{font-size:13px;color:var(--text-secondary);font-family:Arial,sans-serif;}
     select{padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-scripture);color:var(--text-primary);font-size:13px;font-family:Arial,sans-serif;}
 
-    /* Nav buttons */
     .nav-buttons{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
     .nav-btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;cursor:pointer;border-radius:6px;font-size:13px;font-family:Arial,sans-serif;transition:background .2s;}
     .nav-btn:hover{background:var(--accent-light);}
     .nav-btn:disabled{background:#ccc;cursor:not-allowed;}
 
-    /* Panel heading */
     .panel-heading{font-size:1.15rem;font-weight:bold;color:var(--text-primary);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-bottom:16px;}
 
-    /* Summary */
     #summaryContent{margin-top:8px;line-height:1.8;}
     #summaryContent h1{font-size:1.5rem;color:var(--gold);margin-bottom:10px;}
     #summaryContent h2{font-size:1.2rem;color:var(--text-primary);border-bottom:2px solid var(--gold);padding-bottom:5px;margin:6px 0 8px;}
@@ -121,13 +112,11 @@
     #summaryContent ul{margin:4px 0 14px 22px;color:var(--text-secondary);}
     #summaryContent li{margin-bottom:7px;line-height:1.85;font-size:15px;}
 
-    /* Verses */
     .chapter-content{margin-top:8px;}
     .verse{padding:9px 9px 9px 48px;margin:3px 0;border-left:3px solid transparent;position:relative;cursor:pointer;transition:background .15s,border-color .15s;line-height:1.85;font-size:15px;color:var(--text-secondary);}
     .verse:hover{background:var(--verse-hover);border-left-color:var(--gold);}
     .verse-number{position:absolute;left:10px;top:10px;font-weight:bold;color:var(--gold);font-size:.82em;min-width:28px;font-family:Arial,sans-serif;}
 
-    /* Sections */
     .section{margin-top:30px;padding-top:16px;border-top:1px solid var(--border-color);}
     .section h3{margin-bottom:10px;font-size:15px;font-family:Arial,sans-serif;}
     .section textarea{width:100%;height:60px;margin-bottom:8px;padding:8px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-scripture);color:var(--text-primary);resize:vertical;font-family:'Lora',Georgia,serif;font-size:14px;}
@@ -135,35 +124,12 @@
     .list{margin-top:10px;}
     .list p{background:var(--bg-secondary);padding:8px 12px;border-radius:6px;margin-bottom:6px;font-size:14px;}
 
-    /* Offline indicator */
     .offline-indicator{position:fixed;bottom:20px;right:20px;background:#ff9800;color:#fff;padding:10px 18px;border-radius:6px;display:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.3);font-family:Arial,sans-serif;font-size:13px;}
     .offline-indicator.show{display:block;}
 
-    /* Update toast */
     .update-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c2b3a;color:#fff;padding:12px 20px;border-radius:8px;display:none;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:Arial,sans-serif;font-size:13px;align-items:center;gap:12px;border:1px solid var(--gold);}
     .update-toast.show{display:flex;}
     .update-toast button{background:var(--gold);color:#1c2b3a;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;}
-
-    /* Offline download modal */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:none;align-items:center;justify-content:center;}
-    .modal-overlay.show{display:flex;}
-    .modal{background:#fff;border-radius:12px;padding:32px 28px;max-width:380px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.3);text-align:center;font-family:Arial,sans-serif;border-top:4px solid var(--gold);}
-    body.dark-mode .modal{background:#1e1e1e;color:#e0e0e0;}
-    .modal h2{font-size:1.2rem;margin-bottom:8px;color:var(--accent);}
-    body.dark-mode .modal h2{color:var(--gold);}
-    .modal p{font-size:13px;color:#666;margin-bottom:20px;line-height:1.6;}
-    body.dark-mode .modal p{color:#aaa;}
-    .modal-versions{display:flex;gap:10px;justify-content:center;margin-bottom:20px;}
-    .modal-versions label{display:flex;align-items:center;gap:6px;padding:8px 14px;border:2px solid #ddd;border-radius:8px;cursor:pointer;font-size:14px;transition:border-color .2s;}
-    .modal-versions label:hover{border-color:var(--gold);}
-    .modal-versions input[type=radio]{accent-color:var(--gold);}
-    body.dark-mode .modal-versions label{border-color:#444;}
-    .progress-bar-wrap{width:100%;background:var(--border-color);border-radius:6px;height:8px;margin-bottom:8px;display:none;}
-    .progress-bar{height:8px;background:#28a745;border-radius:6px;width:0%;transition:width .3s;}
-    #downloadStatus{font-size:12px;color:#888;margin-bottom:12px;min-height:16px;}
-    .modal-btn{background:var(--gold);color:var(--accent);border:none;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold;width:100%;margin-bottom:8px;transition:opacity .2s;}
-    .modal-btn:hover{opacity:.85;}
-    .modal-skip{background:transparent;border:none;color:#aaa;font-size:12px;cursor:pointer;text-decoration:underline;}
 
     #menuOverlay{display:none;position:fixed;inset:0;z-index:9998;}
     #menuOverlay.active{display:block;}
@@ -173,7 +139,6 @@
 
 <div id="menuOverlay" onclick="closeMenu()"></div>
 
-<!-- Top bar -->
 <div class="topbar">
   <div class="menu-wrapper">
     <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
@@ -206,7 +171,6 @@
   </div>
 </div>
 
-<!-- Main content -->
 <div class="content">
   <div class="left" id="leftPanel">
     <div class="panel-heading">Scripture Summary</div>
@@ -252,38 +216,15 @@
 
 <div class="offline-indicator" id="offlineIndicator">📡 You're offline — cached content only</div>
 
-<!-- Update toast -->
 <div class="update-toast" id="updateToast">
   <span id="updateMsg">🔄 Update available!</span>
   <button onclick="applyUpdate()">Update Now</button>
   <button onclick="dismissUpdate()" style="background:transparent;color:#ccc;font-size:12px;">Later</button>
 </div>
 
-<!-- Offline download modal -->
-<div class="modal-overlay" id="offlineModal">
-  <div class="modal">
-    <div style="font-size:2.5rem;margin-bottom:12px;">📖</div>
-    <h2>Download Bible for Offline</h2>
-    <p>Choose your preferred version to download all chapters so you can read the Bible without an internet connection.</p>
-    <div class="modal-versions">
-      <label><input type="radio" name="dlVersion" value="kjv" checked> <span>KJV</span></label>
-      <label><input type="radio" name="dlVersion" value="asv"> <span>ASV</span></label>
-      <label><input type="radio" name="dlVersion" value="web"> <span>WEB</span></label>
-    </div>
-    <div class="progress-bar-wrap" id="progressWrap">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-    <div id="downloadStatus"></div>
-    <button class="modal-btn" id="downloadBtn" onclick="startModalDownload()">⬇️ Download Now</button>
-    <button class="modal-skip" onclick="dismissOfflineModal()">Maybe later</button>
-  </div>
-</div>
-
 <script>
-  // ── Config ────────────────────────────────────────────────────
   const S3_BASE_URL = "https://edwin-aws.github.io/files";
 
-  // ── Service Worker ────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js')
@@ -292,11 +233,40 @@
     });
   }
 
-  // ── Offline indicator ─────────────────────────────────────────
   const offlineEl = document.getElementById('offlineIndicator');
   window.addEventListener('online',  () => offlineEl.classList.remove('show'));
   window.addEventListener('offline', () => offlineEl.classList.add('show'));
   if (!navigator.onLine) offlineEl.classList.add('show');
+
+  // ── Bible JSON cache (loaded once per version) ────────────────
+  const bibleCache = {};
+
+  async function loadBibleVersion(version) {
+    if (bibleCache[version]) return bibleCache[version];
+    const r = await fetch(`./bible/${version}.json`);
+    if (!r.ok) throw new Error(`Could not load ${version}.json`);
+    const raw = await r.json();
+    // Parse into { "Book:Chapter": [{verse, text}, ...] }
+    const parsed = {};
+    for (const item of raw) {
+      if (!item.r) continue;
+      const parts = item.r.split(':');
+      // format: version:Book:Chapter:Verse
+      if (parts.length < 4) continue;
+      const verseNum = parseInt(parts[3]);
+      if (verseNum === 0) continue; // skip chapter headings
+      const book    = parts[1];
+      const chapter = parts[2];
+      const key     = `${book}:${chapter}`;
+      if (!parsed[key]) parsed[key] = [];
+      parsed[key].push({
+        verse: verseNum,
+        text:  item.t.replace(/\*p/g, '').trim()
+      });
+    }
+    bibleCache[version] = parsed;
+    return parsed;
+  }
 
   // ── Auto-update checker ───────────────────────────────────────
   const STORED_VERSION_KEY = 'app-version';
@@ -317,7 +287,6 @@
       localStorage.setItem(STORED_VERSION_KEY, data.version);
       localStorage.setItem('app-books', JSON.stringify(data.books));
 
-      // Dynamically register new books
       data.books.forEach(key => {
         const display = key
           .replace('1Samuel','1 Samuel').replace('2Samuel','2 Samuel')
@@ -337,7 +306,7 @@
 
   async function cacheNewSummaries(books) {
     try {
-      const cache = await caches.open('bible-summaries-v4');
+      const cache = await caches.open('bible-summaries-v5');
       for (const book of books) {
         const url = `${S3_BASE_URL}/summaries/${book}.md`;
         const r   = await fetch(url);
@@ -366,81 +335,17 @@
   function applyUpdate() {
     document.getElementById('updateToast').classList.remove('show');
     Object.keys(summaryCache).forEach(k => delete summaryCache[k]);
+    Object.keys(bibleCache).forEach(k => delete bibleCache[k]);
     window.location.reload();
   }
   function dismissUpdate() {
     document.getElementById('updateToast').classList.remove('show');
   }
 
-  // ── Offline download modal ────────────────────────────────────
-  function checkOfflineModal() {
-    if (!navigator.onLine) return;
-    if (localStorage.getItem('offline-download-done')) return;
-    setTimeout(() => {
-      document.getElementById('offlineModal').classList.add('show');
-    }, 3000);
-  }
-
-  function dismissOfflineModal() {
-    document.getElementById('offlineModal').classList.remove('show');
-    localStorage.setItem('offline-download-done', 'skipped');
-  }
-
-  async function startModalDownload() {
-    const version = document.querySelector('input[name="dlVersion"]:checked').value;
-    const btn     = document.getElementById('downloadBtn');
-    const wrap    = document.getElementById('progressWrap');
-    const bar     = document.getElementById('progressBar');
-    const status  = document.getElementById('downloadStatus');
-
-    const chapters = [];
-    Object.entries(bibleStructure).forEach(([, books]) => {
-      Object.entries(books).forEach(([book, count]) => {
-        for (let ch = 1; ch <= count; ch++) chapters.push({ book, ch });
-      });
-    });
-
-    const total = chapters.length;
-    let done = 0, failed = 0;
-
-    btn.disabled = true; btn.textContent = '⏳ Downloading…';
-    wrap.style.display = 'block';
-
-    const cache = await caches.open('bible-summaries-v4');
-    for (const { book, ch } of chapters) {
-      try {
-        const url = singleChapterBooks[book]
-          ? `https://bible-api.com/${encodeURIComponent(book)}%201:1-${singleChapterBooks[book]}?translation=${version}`
-          : `https://bible-api.com/${encodeURIComponent(book + ' ' + ch)}?translation=${version}`;
-        const existing = await cache.match(url);
-        if (!existing) {
-          const resp = await fetch(url);
-          if (resp.ok) await cache.put(url, resp);
-        }
-        done++;
-        bar.style.width    = Math.round((done / total) * 100) + '%';
-        status.textContent = `Caching ${book} ${ch}… (${done}/${total})`;
-        await new Promise(r => setTimeout(r, 80));
-      } catch(e) { failed++; done++; }
-    }
-
-    localStorage.setItem('offline-download-done', version);
-    btn.textContent = '✅ Done!';
-    bar.style.width = '100%';
-    status.textContent = failed > 0
-      ? `${total - failed} chapters cached. ${failed} failed.`
-      : `✅ All ${total} chapters cached for offline!`;
-
-    setTimeout(() => {
-      document.getElementById('offlineModal').classList.remove('show');
-    }, 2500);
-  }
-
   // ── State ─────────────────────────────────────────────────────
   let currentBook = '', currentChapterNum = 0, currentChapter = '', currentTestament = 'old';
   let currentView = 'summary';
 
-  // ── Bible structure ───────────────────────────────────────────
   const bibleStructure = {
     old:{
       "Genesis":50,"Exodus":40,"Leviticus":27,"Numbers":36,"Deuteronomy":34,
@@ -470,7 +375,6 @@
     "1 Samuel":"1Samuel","2 Samuel":"2Samuel","1 Kings":"1Kings"
   };
 
-  // ── Utilities ─────────────────────────────────────────────────
   marked.setOptions({breaks:true, gfm:true});
   const esc   = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -497,7 +401,6 @@
     });
   }
 
-  // ── Menu ──────────────────────────────────────────────────────
   function toggleMenu() {
     const menu    = document.getElementById('dropdownMenu');
     const overlay = document.getElementById('menuOverlay');
@@ -511,7 +414,6 @@
   }
   function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 
-  // ── Testament tabs ────────────────────────────────────────────
   function showBooks(testament) {
     currentTestament = testament;
     document.getElementById('tabOld').classList.toggle('active', testament==='old');
@@ -529,7 +431,6 @@
     bl.innerHTML = ''; bl.appendChild(ul);
   }
 
-  // ── Chapter list ──────────────────────────────────────────────
   function toggleChapterList(testament, book, bookLi) {
     const next = bookLi.nextElementSibling;
     if (next && next.classList.contains('chapter-list')) {
@@ -557,7 +458,6 @@
     bookLi.insertAdjacentElement('afterend', ul);
   }
 
-  // ── Select chapter ────────────────────────────────────────────
   function selectChapter(book, chNum) {
     currentBook = book; currentChapterNum = chNum;
     currentChapter = `${book} ${chNum}`;
@@ -570,7 +470,6 @@
     if (currentView === 'split' || currentView === 'scripture') loadChapter();
   }
 
-  // ── Summary loader ────────────────────────────────────────────
   async function loadSummary(book, chNum) {
     const msgEl  = document.getElementById('summaryText');
     const contEl = document.getElementById('summaryContent');
@@ -602,7 +501,6 @@
     }
   }
 
-  // ── Extract chapter from MD ───────────────────────────────────
   function extractChapterHtml(fullMd, book, chNum) {
     const lines = fullMd.split('\n');
     const re    = new RegExp(`^##\\s+${escRe(book)}\\s+${chNum}(?:\\s|$|\\s*[—\\-])`, 'i');
@@ -643,44 +541,26 @@
     return marked.parse(parts.join('\n\n---\n\n'));
   }
 
-  // ── Bible text ────────────────────────────────────────────────
+  // ── Bible text from local JSON ────────────────────────────────
   async function loadChapter() {
     if (!currentBook) return;
     const content = document.getElementById('chapterContent');
     const version = document.getElementById('versionSelect').value;
     document.getElementById('chapterHeading').textContent = `${currentChapter} (${version.toUpperCase()})`;
-    if (!navigator.onLine) {
-      // Try cache first when offline
-      const url = singleChapterBooks[currentBook]
-        ? `https://bible-api.com/${encodeURIComponent(currentBook)}%201:1-${singleChapterBooks[currentBook]}?translation=${version}`
-        : `https://bible-api.com/${encodeURIComponent(currentChapter)}?translation=${version}`;
-      const cached = await caches.match(url).catch(() => null);
-      if (cached) {
-        const data = await cached.json();
-        if (data.verses && data.verses.length) {
-          content.innerHTML = data.verses.map(v =>
-            `<div class="verse"><span class="verse-number">${v.verse}</span><span class="verse-text">${v.text}</span></div>`
-          ).join('');
-          return;
-        }
-      }
-      content.innerHTML = '<p style="color:#888;font-style:italic">📡 You\'re offline. Open the Bible online at least once per chapter to cache it for offline use.</p>';
-      return;
-    }
-    content.innerHTML = '<p style="color:#888;font-style:italic">Fetching verses…</p>';
+    content.innerHTML = '<p style="color:#888;font-style:italic">Loading…</p>';
     try {
-      const url = singleChapterBooks[currentBook]
-        ? `https://bible-api.com/${encodeURIComponent(currentBook)}%201:1-${singleChapterBooks[currentBook]}?translation=${version}`
-        : `https://bible-api.com/${encodeURIComponent(currentChapter)}?translation=${version}`;
-      const r    = await fetch(url);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const data = await r.json();
-      if (data.verses && data.verses.length) {
-        content.innerHTML = data.verses.map(v =>
-          `<div class="verse"><span class="verse-number">${v.verse}</span><span class="verse-text">${v.text}</span></div>`
+      const bible  = await loadBibleVersion(version);
+      // Book name in JSON uses no spaces e.g. "1Samuel", "Song of Solomon"
+      // Try direct match first, then strip spaces
+      const bookKey = currentBook.replace(/ /g, '');
+      const chapKey = `${bookKey}:${currentChapterNum}`;
+      const verses  = bible[chapKey] || bible[`${currentBook}:${currentChapterNum}`];
+      if (verses && verses.length) {
+        content.innerHTML = verses.map(v =>
+          `<div class="verse"><span class="verse-number">${v.verse}</span><span class="verse-text">${esc(v.text)}</span></div>`
         ).join('');
       } else {
-        content.innerText = `No verses found for ${currentChapter} in ${version.toUpperCase()}.`;
+        content.innerHTML = `<p style="color:#888;font-style:italic">No verses found for ${esc(currentChapter)} in ${version.toUpperCase()}.</p>`;
       }
     } catch(err) {
       content.innerHTML = `<p style="color:red"><strong>Could not load ${esc(currentChapter)}</strong><br><small>${esc(err.message)}</small></p>`;
@@ -691,7 +571,6 @@
     if ((currentView === 'split' || currentView === 'scripture') && currentChapter) loadChapter();
   }
 
-  // ── Navigate prev/next ────────────────────────────────────────
   function navigateChapter(dir) {
     if (!currentBook) return;
     const maxCh = bibleStructure[currentTestament][currentBook];
@@ -705,7 +584,6 @@
     selectChapter(currentBook, next);
   }
 
-  // ── Search ────────────────────────────────────────────────────
   document.getElementById('searchInput').addEventListener('input', function() {
     const q = this.value.toLowerCase();
     document.querySelectorAll('#booksList > ul > li').forEach(li => {
@@ -713,7 +591,6 @@
     });
   });
 
-  // ── Comments / Questions ──────────────────────────────────────
   function addComment() {
     const inp = document.getElementById('commentInput');
     if (!inp.value.trim()) return;
@@ -731,12 +608,8 @@
     inp.value = '';
   }
 
-  // ── Init ──────────────────────────────────────────────────────
   showBooks('old');
-  window.addEventListener('load', () => {
-    setTimeout(checkForUpdates, 2000);
-    checkOfflineModal();
-  });
+  window.addEventListener('load', () => setTimeout(checkForUpdates, 2000));
 </script>
 </body>
 </html>
