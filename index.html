@@ -884,46 +884,75 @@
 
   // ── Auto-update checker ───────────────────────────────────────
   const STORED_VERSION_KEY = 'app-version';
+  const CACHE_NAME = 'bible-summaries-v6'; // keep in sync with service-worker.js's CACHE_NAME
   const summaryCache = {};
 
+  // Generic app-version bump (code/feature updates) — unrelated to book content.
   async function checkForUpdates() {
     try {
       const r    = await fetch('./version.json?t=' + Date.now());
       const data = await r.json();
-      const stored      = localStorage.getItem(STORED_VERSION_KEY);
-      const storedBooks = JSON.parse(localStorage.getItem('app-books') || '[]');
+      const stored = localStorage.getItem(STORED_VERSION_KEY);
       if (stored && stored !== data.version) {
-        const newBooks = data.books.filter(b => !storedBooks.includes(b));
-        await cacheNewSummaries(data.books);
-        showUpdateToast(newBooks);
+        showUpdateToast();
       }
       localStorage.setItem(STORED_VERSION_KEY, data.version);
-      localStorage.setItem('app-books', JSON.stringify(data.books));
     } catch(e) { console.log('Version check skipped:', e.message); }
   }
 
-  async function cacheNewSummaries(books) {
+  // ── New-summary auto-detection ──────────────────────────────────
+  // Instead of trusting a manually maintained list, this checks which
+  // summary files actually exist on the server and diffs against what
+  // this device last saw. Adding a new BookName.md to /summaries/ is
+  // the only step ever needed — this picks it up on its own.
+  const KNOWN_BOOKS_KEY   = 'known-summary-books';
+  const LAST_PROBE_KEY    = 'last-summary-probe';
+  const PROBE_INTERVAL_MS = 12 * 60 * 60 * 1000; // don't hammer the server more than every 12h
+  async function checkForNewSummaries() {
     try {
-      const cache = await caches.open('bible-summaries-v6');
-      for (const book of books) {
-        const url = `${S3_BASE_URL}/summaries/${book}.md`;
-        const r   = await fetch(url);
-        if (r.ok) await cache.put(url, r);
+      const lastProbe = parseInt(localStorage.getItem(LAST_PROBE_KEY) || '0');
+      if (Date.now() - lastProbe < PROBE_INTERVAL_MS) return;
+
+      const allBooks = [...Object.keys(bibleStructure.old), ...Object.keys(bibleStructure.new)];
+      const results = await Promise.all(allBooks.map(async book => {
+        try {
+          const r = await fetch(`${S3_BASE_URL}/summaries/${summaryKeyFor(book)}.md`, { method: 'HEAD' });
+          return r.ok ? book : null;
+        } catch(e) { return null; }
+      }));
+      const available = results.filter(Boolean);
+
+      const knownRaw = localStorage.getItem(KNOWN_BOOKS_KEY);
+      localStorage.setItem(LAST_PROBE_KEY, Date.now().toString());
+      localStorage.setItem(KNOWN_BOOKS_KEY, JSON.stringify(available));
+
+      if (knownRaw === null) return; // first run on this device — nothing to compare against yet
+      const known = JSON.parse(knownRaw);
+      const newlyAvailable = available.filter(b => !known.includes(b));
+      if (!newlyAvailable.length) return;
+
+      showUpdateToast(newlyAvailable);
+
+      // Pre-cache the new book(s) so they're ready offline immediately,
+      // instead of waiting for someone to open that chapter first.
+      const cache = await caches.open(CACHE_NAME);
+      for (const book of newlyAvailable) {
+        const url = `${S3_BASE_URL}/summaries/${summaryKeyFor(book)}.md`;
+        try {
+          const resp = await fetch(url);
+          if (resp.ok) await cache.put(url, resp.clone());
+        } catch(e) {}
       }
-    } catch(e) {}
+    } catch(e) { console.log('Summary probe skipped:', e.message); }
   }
 
   function showUpdateToast(newBooks) {
     const toast = document.getElementById('updateToast');
     const msg   = document.getElementById('updateMsg');
     if (newBooks && newBooks.length > 0) {
-      const names = newBooks.map(b => b
-        .replace('1Samuel','1 Samuel').replace('2Samuel','2 Samuel')
-        .replace('1Kings','1 Kings').replace('2Kings','2 Kings')
-      );
-      msg.innerHTML = names.length === 1
-        ? `📖 <strong>${names[0]}</strong> is now available!`
-        : `📖 New books: <strong>${names.join(', ')}</strong> are now available!`;
+      msg.innerHTML = newBooks.length === 1
+        ? `📖 <strong>${newBooks[0]}</strong> is now available!`
+        : `📖 New books: <strong>${newBooks.join(', ')}</strong> are now available!`;
     } else {
       msg.innerHTML = '🔄 App update available!';
     }
@@ -2012,4 +2041,366 @@ ${APP_CREDIT}`;
         </div>`).join('');
     } else {
       const hl = keys.filter(k => data[k].highlight);
-      if (!hl.length) { body.innerHTML = '<div class="bh-empty">No highlights yet.<br><small>Long-press any verse 
+      if (!hl.length) { body.innerHTML = '<div class="bh-empty">No highlights yet.<br><small>Long-press any verse to highlight it.</small></div>'; return; }
+      html = hl.map(k => `
+        <div class="bh-item" style="border-left-color:${colors[data[k].highlight]||'#c9a84c'}" onclick="navigateToVerse('${k}')">
+          <button class="bh-item-del" onclick="event.stopPropagation();deleteAnn('${k}','highlight')">🗑</button>
+          <div class="bh-item-ref">${data[k].ref || k}</div>
+          <div class="bh-item-text" style="background:${colors[data[k].highlight]||''};padding:4px 6px;border-radius:4px;">${esc(data[k].verseText || '')}</div>
+        </div>`).join('');
+    }
+    body.innerHTML = html;
+  }
+
+  function deleteAnn(key, type) {
+    const data = getAnnotations();
+    if (data[key]) {
+      delete data[key][type];
+      if (!Object.keys(data[key]).length) delete data[key];
+      saveAnnotations(data);
+    }
+    // Refresh any visible verse
+    document.querySelectorAll('.verse').forEach(el => {
+      const vnum = el.querySelector('.verse-number')?.textContent;
+      const vk   = verseKey(currentBook, currentChapterNum, vnum);
+      if (vk === key) applyAnnotationToEl(el, vk);
+    });
+    renderBhPanel();
+  }
+
+  function navigateToVerse(vkey) {
+    const parts   = vkey.split(':');
+    const book    = parts[0];
+    const chNum   = parseInt(parts[1]);
+    closeBhPanel();
+    const testament = bibleStructure.old[book] ? 'old' : 'new';
+    showBooks(testament);
+    setTimeout(() => {
+      const bookLi = [...document.querySelectorAll('#booksList > ul > li')]
+        .find(li => li.dataset.book === book);
+      if (bookLi) {
+        bookLi.click();
+        setTimeout(() => {
+          const chLi = document.querySelectorAll('.chapter-list li')[chNum - 1];
+          if (chLi) chLi.click();
+        }, 120);
+      }
+    }, 60);
+  }
+
+  function exportAnnotations() {
+    const data = getAnnotations();
+    const keys = Object.keys(data);
+    if (!keys.length) { showToast('Nothing to export yet!'); return; }
+    let txt = 'BIBLE ANNOTATIONS — ' + new Date().toLocaleDateString() + '\n';
+    txt += APP_CREDIT + '\n' + '='.repeat(50) + '\n\n';
+    const bm = keys.filter(k => data[k].bookmark);
+    if (bm.length) { txt += '🔖 BOOKMARKS\n' + '-'.repeat(30) + '\n'; bm.forEach(k => { txt += `${data[k].ref||k}\n${data[k].verseText||''}\n\n`; }); }
+    const notes = keys.filter(k => data[k].note);
+    if (notes.length) { txt += '📝 NOTES\n' + '-'.repeat(30) + '\n'; notes.forEach(k => { txt += `${data[k].ref||k}\n${data[k].verseText||''}\nNote: ${data[k].note}\n\n`; }); }
+    const hl = keys.filter(k => data[k].highlight);
+    if (hl.length) { txt += '🟡 HIGHLIGHTS\n' + '-'.repeat(30) + '\n'; hl.forEach(k => { txt += `[${(data[k].highlight||'').toUpperCase()}] ${data[k].ref||k}\n${data[k].verseText||''}\n\n`; }); }
+    const a  = document.createElement('a');
+    a.href   = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+    a.download = 'bible-annotations.txt';
+    a.click();
+  }
+
+  // Show summary share button when summary loads
+  function showSummaryShareBtn(show) {
+    const btn = document.getElementById('summaryShareBtn');
+    if (btn) btn.style.display = show ? 'inline-flex' : 'none';
+  }
+
+
+
+  // ── Font size control ─────────────────────────────────────────
+  const FONT_STORAGE_KEY = 'bible-font-size';
+  const FONT_MIN = 12, FONT_MAX = 24, FONT_DEFAULT = 15;
+
+  function applyFontSize(size) {
+    size = Math.min(FONT_MAX, Math.max(FONT_MIN, parseInt(size)));
+    // Apply to all reading content
+    const targets = [
+      '#summaryContent', '#summaryContent p', '#summaryContent li',
+      '#summaryContent blockquote', '.verse', '.verse-text',
+      '.cq-text', '.cq-reply .cq-text'
+    ];
+    let styleEl = document.getElementById('fontSizeStyle');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'fontSizeStyle';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = targets.map(t => `${t}{font-size:${size}px!important;}`).join('');
+    // Update controls
+    const slider = document.getElementById('fontSlider');
+    const label  = document.getElementById('fontSizeLabel');
+    const preview = document.getElementById('fontPreviewText');
+    if (slider) slider.value = size;
+    if (label)  label.textContent = size + 'px';
+    if (preview) preview.style.fontSize = size + 'px';
+    // Update preset active state
+    document.querySelectorAll('.font-preset').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.getAttribute('onclick').match(/\d+/)[0]) === size);
+    });
+    localStorage.setItem(FONT_STORAGE_KEY, size);
+  }
+
+  function setFontSize(size) { applyFontSize(size); }
+  function adjustFont(delta) {
+    const current = parseInt(localStorage.getItem(FONT_STORAGE_KEY) || FONT_DEFAULT);
+    applyFontSize(current + delta);
+  }
+
+  function openFontCtrl() {
+    document.getElementById('fontCtrl').classList.add('show');
+  }
+  function closeFontCtrl(e) {
+    if (e.target === document.getElementById('fontCtrl')) {
+      document.getElementById('fontCtrl').classList.remove('show');
+    }
+  }
+
+  // Load saved font size on startup
+  const savedFont = localStorage.getItem(FONT_STORAGE_KEY);
+  if (savedFont) applyFontSize(savedFont);
+
+
+
+  // ── Settings menu ─────────────────────────────────────────────
+  function toggleSettingsMenu() {
+    document.getElementById('settingsMenu').classList.toggle('open');
+  }
+  function closeSettingsMenu() {
+    document.getElementById('settingsMenu').classList.remove('open');
+  }
+  function updateDarkToggle() {
+    const pill = document.getElementById('darkTogglePill');
+    if (pill) pill.classList.toggle('on', document.body.classList.contains('dark-mode'));
+  }
+  // Close settings on outside click
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.settings-wrap');
+    if (wrap && !wrap.contains(e.target)) closeSettingsMenu();
+  });
+  // Init dark toggle state
+  window.addEventListener('load', () => updateDarkToggle());
+
+
+
+  // ── More menu ─────────────────────────────────────────────────
+  function toggleMoreMenu() {
+    document.getElementById('moreDropdown').classList.toggle('open');
+  }
+  function closeMoreMenu() {
+    document.getElementById('moreDropdown').classList.remove('open');
+  }
+  document.addEventListener('click', (e) => {
+    const wrapper = document.querySelector('.more-menu-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) closeMoreMenu();
+  });
+
+
+  // ── Profanity & spam filter ───────────────────────────────────
+
+  // Auto-replace: Bible/legitimate words that look like profanity
+  const SAFE_REPLACEMENTS = [
+    [/\barse\b/gi, 'donkey'],
+    [/\bdamned\b/gi, 'condemned'],
+    [/\bhell\b/gi, 'hell'],        // keep — biblical
+    [/\bbastard\b/gi, 'illegitimate'],
+    [/\bwhore\b/gi, 'harlot'],
+    [/\bwhoremonger\b/gi, 'immoral person'],
+  ];
+
+  // Profanity patterns — catches creative spelling
+  // Each pattern uses character substitution variants
+  const PROFANITY_PATTERNS = [
+    // f-word variants: f*ck, fu(k, fvck, f**k etc
+    /f[\W_]*u[\W_]*c[\W_]*k/i,
+    /f[\W_]*[\*u@][\W_]*c[\W_]*k/i,
+    // s-word variants: sh!t, sh1t, $hit etc
+    /s[\W_]*h[\W_]*[i!1\|][\W_]*t/i,
+    /[\$s][\W_]*h[\W_]*[i!1][\W_]*t/i,
+    // b-word (female dog)
+    /b[\W_]*[i!1][\W_]*t[\W_]*c[\W_]*h/i,
+    // a-word (donkey — but not biblical arse which is replaced above)
+    /a[\W_]*s[\W_]*s/i,
+    /a[\W_]*s[\W_]*s[\W_]*h[\W_]*[o0][\W_]*l[\W_]*e/i,
+    // c-word
+    /c[\W_]*u[\W_]*n[\W_]*t/i,
+    // d-word
+    /d[\W_]*[i!1][\W_]*c[\W_]*k/i,
+    // p-word
+    /p[\W_]*[i!1][\W_]*s[\W_]*s/i,
+    // n-word
+    /n[\W_]*[i!1][\W_]*g[\W_]*g/i,
+    // common spam patterns
+    /(..)\1{4,}/i,   // repeated chars like "aaaaaaa"
+    /https?:\/\//i, // URLs — no links in comments
+  ];
+
+  function sanitizeText(text) {
+    // First apply safe biblical replacements
+    let clean = text;
+    SAFE_REPLACEMENTS.forEach(([pattern, replacement]) => {
+      clean = clean.replace(pattern, replacement);
+    });
+    return clean;
+  }
+
+  function containsProfanity(text) {
+    // Check sanitized version
+    const sanitized = sanitizeText(text);
+    return PROFANITY_PATTERNS.some(pattern => pattern.test(sanitized));
+  }
+
+  // Spam cooldown — 1 minute between posts
+  const COOLDOWN_MS = 60000;
+  function isOnCooldown() {
+    const last = parseInt(localStorage.getItem('last-post-time') || '0');
+    return Date.now() - last < COOLDOWN_MS;
+  }
+  function getCooldownSeconds() {
+    const last = parseInt(localStorage.getItem('last-post-time') || '0');
+    return Math.ceil((COOLDOWN_MS - (Date.now() - last)) / 1000);
+  }
+  function stampPostTime() {
+    localStorage.setItem('last-post-time', Date.now().toString());
+  }
+
+
+
+  // ── PWA install tracking ──────────────────────────────────────
+  window.addEventListener('appinstalled', () => {
+    logEvent('pwa_installed');
+    // Also log to Firebase DB for a simple install counter
+    db.ref('stats/installs').transaction(count => (count || 0) + 1);
+    showToast('📲 App installed! Welcome to Bible Summaries 🙏');
+  });
+
+  // Track first visit
+  if (!localStorage.getItem('first-visit-tracked')) {
+    localStorage.setItem('first-visit-tracked', 'true');
+    db.ref('stats/total_visitors').transaction(count => (count || 0) + 1);
+    logEvent('first_visit');
+  }
+
+  // Log page view
+  logEvent('page_view', { page: 'home' });
+
+
+  showBooks('old');
+  window.addEventListener('load', () => {
+    setTimeout(checkForUpdates, 2000);
+    setTimeout(checkForNewSummaries, 2500);
+    checkInstallModal();
+  });
+</script>
+
+<!-- Install tutorial modal -->
+<div class="install-overlay" id="installModal">
+  <div class="install-modal">
+    <div class="install-header">
+      <span class="big-icon">📖</span>
+      <h2>Install for Offline Reading</h2>
+      <p>Add this app to your home screen for instant access<br>and full offline Bible reading — no internet needed!</p>
+    </div>
+    <div class="platform-tabs">
+      <button class="platform-tab active" id="tabAndroid" onclick="switchPlatform('android')">🤖 Android</button>
+      <button class="platform-tab"        id="tabIos"     onclick="switchPlatform('ios')">🍎 iPhone</button>
+    </div>
+    <div class="install-steps" id="installSteps"></div>
+    <div class="offline-note">
+      <strong>✅ What works offline after installing:</strong>
+      All Bible summaries by Mateo · Full Bible text (KJV, ASV, WEB) · Dark mode · Navigation
+    </div>
+    <div class="install-footer">
+      <button class="install-cta" onclick="closeInstallModal()">Got it — let's go! 🙏</button>
+      <button class="install-skip" onclick="dismissInstallModal()">Maybe later</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Verse action popup -->
+<div class="verse-popup" id="versePopup">
+  <div class="pop-ref" id="popRef">Genesis 1:1</div>
+  <div class="pop-actions">
+    <button class="pop-btn" id="btnHighlight" onclick="toggleHlSwatches()">🟡 Highlight</button>
+    <button class="pop-btn" id="btnBookmark"  onclick="toggleBookmark()">🔖 Bookmark</button>
+    <button class="pop-btn" id="btnNote"      onclick="toggleNoteInput()">📝 Note</button>
+    <button class="pop-btn" onclick="copyVerse()">📋 Copy</button>
+    <button class="pop-btn" onclick="shareVerse()">↗ Share</button>
+  </div>
+  <div class="hl-swatches" id="hlSwatches">
+    <div class="hl-swatch yellow" onclick="applyHighlight('yellow')" title="Yellow"></div>
+    <div class="hl-swatch green"  onclick="applyHighlight('green')"  title="Green"></div>
+    <div class="hl-swatch pink"   onclick="applyHighlight('pink')"   title="Pink"></div>
+    <div class="hl-swatch blue"   onclick="applyHighlight('blue')"   title="Blue"></div>
+    <div class="hl-swatch clear"  onclick="applyHighlight(null)"     title="Clear">✕</div>
+  </div>
+  <textarea class="pop-note-area" id="noteText" placeholder="Write your note…"></textarea>
+  <button class="pop-save-note" id="saveNoteBtn" onclick="saveNote()">Save Note</button>
+</div>
+
+<!-- Share popup -->
+<div class="share-popup" id="sharePopup">
+  <div class="share-title" id="sharePopupTitle">Share</div>
+  <button class="share-btn" onclick="doShare('copy')"><span>📋</span> Copy to clipboard</button>
+  <button class="share-btn" onclick="doShare('whatsapp')"><span>💬</span> WhatsApp</button>
+  <button class="share-btn" onclick="doShare('native')"><span>↗</span> Share sheet</button>
+  <button class="share-btn" onclick="doShare('email')"><span>📧</span> Email</button>
+  <button class="share-btn" onclick="doShare('image')"><span>🖼</span> Share as image</button>
+</div>
+
+<!-- Bookmarks/Highlights panel -->
+<div class="panel-overlay" id="panelOverlay" onclick="closeBhPanel()"></div>
+<div class="bh-panel" id="bhPanel">
+  <div class="bh-header">
+    <h3>📖 My Study Notes</h3>
+    <button class="bh-close" onclick="closeBhPanel()">✕</button>
+  </div>
+  <div class="bh-tabs">
+    <button class="bh-tab active" id="bhtab-bookmarks"  onclick="switchBhTab('bookmarks')">🔖 Bookmarks</button>
+    <button class="bh-tab"        id="bhtab-notes"      onclick="switchBhTab('notes')">📝 Notes</button>
+    <button class="bh-tab"        id="bhtab-highlights" onclick="switchBhTab('highlights')">🟡 Highlights</button>
+  </div>
+  <div class="bh-body" id="bhBody"></div>
+  <button class="bh-export" onclick="exportAnnotations()">⬇ Export All</button>
+</div>
+
+<!-- Copy toast -->
+<div class="copy-toast" id="copyToast">✅ Copied!</div>
+
+<!-- Hidden canvas for image share -->
+<canvas id="shareCanvas" style="display:none;"></canvas>
+
+
+<!-- Font size control sheet -->
+<div class="font-ctrl" id="fontCtrl" onclick="closeFontCtrl(event)">
+  <div class="font-ctrl-sheet">
+    <div class="font-ctrl-handle"></div>
+    <div class="font-ctrl-title">🔤 Text Size</div>
+    <div class="font-size-row">
+      <button class="font-size-btn" onclick="adjustFont(-1)">A−</button>
+      <input class="font-size-slider" type="range" id="fontSlider" min="12" max="24" step="1" value="15" oninput="setFontSize(this.value)">
+      <button class="font-size-btn" onclick="adjustFont(1)">A+</button>
+    </div>
+    <div class="font-size-label" id="fontSizeLabel">15px</div>
+    <div class="font-size-preview">
+      <p id="fontPreviewText">In the beginning God created the heaven and the earth. And the earth was without form, and void; and darkness was upon the face of the deep.</p>
+    </div>
+    <div class="font-presets">
+      <button class="font-preset" onclick="setFontSize(13)">Small</button>
+      <button class="font-preset" onclick="setFontSize(15)">Default</button>
+      <button class="font-preset" onclick="setFontSize(18)">Large</button>
+      <button class="font-preset" onclick="setFontSize(21)">XL</button>
+    </div>
+    <button onclick="document.getElementById('fontCtrl').classList.remove('show')" style="margin-top:16px;width:100%;background:#c9a84c;color:#1c2b3a;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;">Save</button>
+  </div>
+</div>
+
+</body>
+</html>
