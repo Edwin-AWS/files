@@ -40,16 +40,21 @@
     /* Row 1: chalkboard title */
     .topbar-title{padding:8px 14px;}
     .chalkboard{
-      width:100%;padding:8px 16px;
+      width:100%;padding:12px 16px;
       background:radial-gradient(circle at top left,#2a2a2a,#111);
       border:1px solid #444;border-radius:8px;
       text-align:center;
       font-family:'Permanent Marker',cursive;color:#fff;
-      display:flex;align-items:center;justify-content:center;gap:10px;
+      display:flex;align-items:center;justify-content:center;gap:12px;
     }
-    .chalkboard-icon{font-size:22px;flex-shrink:0;}
-    .chalkboard h1{font-size:clamp(11px,1.8vw,22px);font-weight:normal;margin-bottom:2px;}
-    .chalkboard p{font-size:clamp(8px,1vw,12px);font-style:italic;color:#ccc;}
+    .chalkboard-icon{font-size:26px;flex-shrink:0;filter:drop-shadow(0 0 4px rgba(255,255,255,.25));}
+    .chalkboard h1{
+      font-size:clamp(15px,4.2vw,22px);font-weight:normal;margin-bottom:4px;
+      letter-spacing:.03em;line-height:1.3;
+      text-shadow:0 0 6px rgba(255,255,255,.18);
+    }
+    .chalkboard p{font-size:clamp(11px,2.6vw,13px);font-style:italic;color:#d8d8d8;line-height:1.45;}
+    .chalkboard p .verse-ref{color:var(--gold);font-style:normal;font-weight:bold;}
 
     /* Row 2: buttons */
     .topbar-btns{
@@ -57,11 +62,11 @@
       display:flex;align-items:center;
       justify-content:space-between;gap:8px;
     }
-    .menu-btn{background:var(--gold);color:var(--accent);border:none;padding:8px 14px;cursor:pointer;border-radius:6px;font-size:13px;font-weight:bold;white-space:nowrap;transition:opacity .2s;}
+    .menu-btn{background:var(--gold);color:var(--accent);border:none;padding:10px 16px;cursor:pointer;border-radius:6px;font-size:14px;font-weight:bold;white-space:nowrap;transition:opacity .2s;}
     .menu-btn:hover{opacity:.85;}
 
     .view-toggle{display:flex;gap:4px;background:#0d1a26;border-radius:8px;padding:4px;flex-shrink:0;}
-    .view-toggle button{background:transparent;color:#aaa;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;transition:all .2s;white-space:nowrap;}
+    .view-toggle button{background:transparent;color:#aaa;border:none;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:bold;transition:all .2s;white-space:nowrap;min-height:40px;}
     .view-toggle button.active{background:var(--gold);color:var(--accent);}
 
     .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -70,7 +75,7 @@
     /* Verse of the day button */
     .votd-btn{
       background:transparent;border:none;cursor:pointer;
-      font-size:22px;padding:4px;
+      font-size:22px;padding:8px;
       transition:transform .2s;
     }
     .votd-btn:hover{transform:scale(1.15);}
@@ -213,10 +218,16 @@
     #menuOverlay{display:none;position:fixed;inset:0;z-index:9998;}
     #menuOverlay.active{display:block;}
 
-    /* ── Mobile: shrink toggle but keep labels visible ───────── */
+    /* ── Mobile: bigger tap targets ───────────────────────────── */
     @media(max-width:600px){
-      .view-toggle button{padding:5px 7px;font-size:10px;}
-      .menu-btn{padding:7px 10px;font-size:12px;}
+      .view-toggle button{padding:9px 10px;font-size:12px;min-height:40px;}
+      .menu-btn{padding:9px 13px;font-size:13px;min-height:40px;}
+      .settings-btn{padding:9px;}
+      .votd-btn{padding:8px;}
+    }
+    @media(max-width:400px){
+      .view-toggle .btn-label{display:none;}
+      .view-toggle button{padding:10px 14px;font-size:16px;}
     }
 
     /* ── Install tutorial modal ───────────────────────────────── */
@@ -594,7 +605,7 @@
     .toggle-pill.on::after{left:21px;}
     .settings-btn{
       background:transparent;border:none;cursor:pointer;
-      color:var(--gold);font-size:18px;padding:6px;
+      color:var(--gold);font-size:18px;padding:9px;
       border-radius:6px;transition:background .15s;
       display:flex;align-items:center;justify-content:center;
     }
@@ -646,7 +657,7 @@
       <span class="chalkboard-icon">📖</span>
       <div>
         <h1>BIBLE SUMMARIES BY MATEO THE PREACHER</h1>
-        <p>"Study to shew thyself approved unto God…" — 2 Timothy 2:15</p>
+        <p>"Study to shew thyself approved unto God…" — <span class="verse-ref">2 Timothy 2:15</span></p>
       </div>
     </div>
   </div>
@@ -720,9 +731,15 @@
         <option value="web">WEB</option>
       </select>
     </div>
-    <p id="summaryText" style="color:var(--text-secondary);font-style:italic;font-size:15px;margin-top:12px;">
-      Open the Menu → choose a book → select a chapter.
-    </p>
+    <div id="welcomeCard" style="margin-top:14px;">
+      <p id="summaryText" style="color:var(--text-secondary);font-style:italic;font-size:15px;">
+        Open the Menu → choose a book → select a chapter.
+      </p>
+      <button id="continueBtn" onclick="continueReading()" style="display:none;width:100%;text-align:left;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;padding:14px 16px;cursor:pointer;font-family:Arial,sans-serif;">
+        <span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);font-weight:bold;margin-bottom:4px;">📖 Continue Reading</span>
+        <span id="continueBtnLabel" style="display:block;font-size:16px;color:var(--text-primary);font-weight:bold;font-family:'Lora',Georgia,serif;"></span>
+      </button>
+    </div>
     <div id="summaryContent" style="display:none;"></div>
     <div class="cq-section" id="cqSection" style="display:none;">
       <div class="cq-tabs">
@@ -1086,7 +1103,32 @@
     bookLi.insertAdjacentElement('afterend', ul);
   }
 
+  function continueReading() {
+    const book = localStorage.getItem('last-book');
+    const chNum = parseInt(localStorage.getItem('last-chapter') || '0');
+    if (!book || !chNum) return;
+    selectChapter(book, chNum);
+  }
+
+  function initWelcomeCard() {
+    if (currentBook) return; // already viewing a chapter, nothing to do
+    const book = localStorage.getItem('last-book');
+    const chNum = localStorage.getItem('last-chapter');
+    const btn = document.getElementById('continueBtn');
+    const label = document.getElementById('continueBtnLabel');
+    const msg = document.getElementById('summaryText');
+    if (book && chNum) {
+      label.textContent = `${book} ${chNum}`;
+      btn.style.display = 'block';
+      msg.textContent = 'Or open the Menu to choose a different book.';
+    } else {
+      btn.style.display = 'none';
+      msg.textContent = 'Open the Menu → choose a book → select a chapter.';
+    }
+  }
+
   function selectChapter(book, chNum) {
+    document.getElementById('welcomeCard').style.display = 'none';
     currentBook = book; currentChapterNum = chNum;
     currentChapter = `${book} ${chNum}`;
     currentTestament = bibleStructure.old[book] ? 'old' : 'new';
@@ -1097,6 +1139,8 @@
     loadSummary(book, chNum);
     if (currentView === 'split' || currentView === 'scripture') loadChapter();
     initCqSection();
+    localStorage.setItem('last-book', book);
+    localStorage.setItem('last-chapter', chNum);
     // Track chapter open
     logEvent('chapter_opened', { book, chapter: chNum });
     db.ref(`stats/chapters/${book.replace(/ /g,'_')}_${chNum}`).transaction(n => (n||0)+1);
@@ -2292,6 +2336,7 @@ ${APP_CREDIT}`;
 
 
   showBooks('old');
+  initWelcomeCard();
   window.addEventListener('load', () => {
     setTimeout(checkForUpdates, 2000);
     setTimeout(checkForNewSummaries, 2500);
