@@ -130,6 +130,17 @@
     .nav-btn:disabled{background:#ccc;cursor:not-allowed;}
 
     .panel-heading{font-size:1.15rem;font-weight:bold;color:var(--text-primary);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-bottom:16px;}
+    /* Keep the current chapter's title visible while scrolling through its content */
+    #summaryContent h2:first-of-type{
+      position:sticky;top:0;z-index:5;
+      background:var(--bg-primary);
+      padding-top:6px;padding-bottom:5px;
+    }
+    .right .panel-heading{
+      position:sticky;top:0;z-index:5;
+      background:var(--bg-scripture);
+      padding-top:2px;
+    }
 
     #summaryContent{margin-top:8px;line-height:1.8;}
     #summaryContent h1{font-size:1.5rem;color:var(--gold);margin-bottom:10px;}
@@ -198,12 +209,6 @@
       font-size:13px;font-weight:bold;
       color:var(--gold);font-family:Arial,sans-serif;
       margin-bottom:20px;
-    }
-    .votd-prayer{
-      font-size:13px;line-height:1.7;
-      color:var(--text-secondary);
-      border-top:1px solid var(--border-color);
-      padding-top:14px;font-style:italic;
     }
     .modal-btn{
       background:var(--gold);color:var(--accent);
@@ -628,6 +633,12 @@
     }
     .more-dropdown.open{display:block;animation:moreIn .15s ease;}
     @keyframes moreIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ── Chapter navigation transition ────────────────────────── */
+    @keyframes slideInFromRight{from{opacity:0;transform:translateX(28px);}to{opacity:1;transform:translateX(0);}}
+    @keyframes slideInFromLeft{from{opacity:0;transform:translateX(-28px);}to{opacity:1;transform:translateX(0);}}
+    .slide-in-next{animation:slideInFromRight .3s ease-out;}
+    .slide-in-prev{animation:slideInFromLeft .3s ease-out;}
     .more-item{
       display:flex;align-items:center;gap:10px;
       width:100%;padding:12px 16px;
@@ -799,8 +810,7 @@
     <div class="votd-label">✨ Verse of the Day</div>
     <div class="votd-text" id="votdText">Loading…</div>
     <div class="votd-ref"  id="votdRef"></div>
-    <div class="votd-prayer" id="votdPrayer"></div>
-    <button class="modal-btn" onclick="closeVotd()">🙏 Amen</button>
+    <button class="modal-btn" onclick="closeVotd()">Amen 🙏</button>
   </div>
 </div>
 
@@ -864,32 +874,57 @@
   }
 
   // ── Verse of the Day ──────────────────────────────────────────
-  const VOTD_VERSES = [
-    { ref:"John 3:16",       text:"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",          prayer:"Lord, thank You for Your incredible love. Help us to truly grasp the depth of Your sacrifice. Amen." },
-    { ref:"Psalm 23:1",      text:"The LORD is my shepherd; I shall not want.",                                                                                                             prayer:"Father, remind us today that You are our provider and guide. We trust in Your care. Amen." },
-    { ref:"Proverbs 3:5-6",  text:"Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.",     prayer:"Lord, help us to surrender our plans to You and trust Your perfect direction. Amen." },
-    { ref:"Isaiah 40:31",    text:"But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary.",               prayer:"Father, renew our strength today. May we soar above our circumstances by Your power. Amen." },
-    { ref:"Philippians 4:13",text:"I can do all things through Christ which strengtheneth me.",                                                                                             prayer:"Lord, remind us that our ability comes from You. May we face today's challenges in Your strength. Amen." },
-    { ref:"Romans 8:28",     text:"And we know that all things work together for good to them that love God, to them who are the called according to his purpose.",                         prayer:"Father, help us to trust Your plan even when we cannot see it. All things are in Your hands. Amen." },
-    { ref:"Joshua 1:9",      text:"Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.", prayer:"Lord, fill us with courage today. Remind us that You are always with us. Amen." },
-    { ref:"Matthew 6:33",    text:"But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.",                                             prayer:"Father, help us to put You first in everything we do today. Amen." },
-    { ref:"Psalm 119:105",   text:"Thy word is a lamp unto my feet, and a light unto my path.",                                                                                            prayer:"Lord, let Your Word guide every step we take. May we never stray from Your light. Amen." },
-    { ref:"2 Timothy 1:7",   text:"For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.",                                                         prayer:"Father, cast out all fear and fill us with Your power, love and clarity today. Amen." },
-    { ref:"Jeremiah 29:11",  text:"For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.",                     prayer:"Lord, thank You that Your plans for us are good. Help us to trust Your future for our lives. Amen." },
-    { ref:"Psalm 46:1",      text:"God is our refuge and strength, a very present help in trouble.",                                                                                       prayer:"Father, be our refuge today. In every trouble, remind us You are near. Amen." },
-    { ref:"Lamentations 3:22-23", text:"It is of the LORD's mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.",   prayer:"Lord, thank You for Your mercies that are new each morning. Great is Your faithfulness. Amen." },
-    { ref:"Hebrews 11:1",    text:"Now faith is the substance of things hoped for, the evidence of things not seen.",                                                                       prayer:"Father, strengthen our faith today. Help us to trust what we cannot yet see. Amen." },
-    { ref:"Ephesians 2:8-9", text:"For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast.",                 prayer:"Lord, thank You for the free gift of salvation. May we never take Your grace for granted. Amen." },
-  ];
+  // Deterministically picks a random verse from anywhere in the Bible,
+  // seeded by today's date so it stays the same all day for everyone,
+  // then changes tomorrow — without needing a curated list of verses.
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
 
-  function showVerseOfDay() {
-    // Pick a verse based on the day of the year so it changes daily
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
-    const v = VOTD_VERSES[dayOfYear % VOTD_VERSES.length];
-    document.getElementById('votdText').textContent   = `"${v.text}"`;
-    document.getElementById('votdRef').textContent    = `— ${v.ref}`;
-    document.getElementById('votdPrayer').innerHTML   = `🙏 <em>${v.prayer}</em>`;
-    document.getElementById('votdModal').classList.add('show');
+  async function showVerseOfDay() {
+    const modal  = document.getElementById('votdModal');
+    const textEl = document.getElementById('votdText');
+    const refEl  = document.getElementById('votdRef');
+    textEl.textContent = 'Loading…';
+    refEl.textContent  = '';
+    modal.classList.add('show');
+
+    try {
+      const version = document.getElementById('versionSelect').value || 'kjv';
+      const bible   = await loadBibleVersion(version);
+      const allBooks = [...Object.keys(bibleStructure.old), ...Object.keys(bibleStructure.new)];
+
+      const today    = new Date();
+      const daySeed  = today.getFullYear() * 372 + today.getMonth() * 31 + today.getDate();
+      const rand     = mulberry32(daySeed);
+
+      let picked = null;
+      for (let attempt = 0; attempt < 10 && !picked; attempt++) {
+        const book = allBooks[Math.floor(rand() * allBooks.length)];
+        const testament = bibleStructure.old[book] ? 'old' : 'new';
+        const maxCh = bibleStructure[testament][book];
+        const chNum = 1 + Math.floor(rand() * maxCh);
+        const jsonBook = book === 'Psalms' ? 'Psalm' : book;
+        const verses = bible[`${jsonBook}:${chNum}`] || bible[`${jsonBook.replace(/ /g,'')}:${chNum}`];
+        if (verses && verses.length) {
+          const v = verses[Math.floor(rand() * verses.length)];
+          picked = { book, chNum, verse: v.verse, text: v.text };
+        }
+      }
+
+      if (!picked) throw new Error('Could not find a verse after several attempts');
+
+      textEl.textContent = `"${picked.text}"`;
+      refEl.textContent  = `— ${picked.book} ${picked.chNum}:${picked.verse} (${version.toUpperCase()})`;
+    } catch (err) {
+      textEl.textContent = 'Could not load a verse right now — check your connection.';
+      refEl.textContent  = '';
+    }
   }
   function closeVotd() {
     document.getElementById('votdModal').classList.remove('show');
@@ -1127,7 +1162,7 @@
     }
   }
 
-  function selectChapter(book, chNum) {
+  function selectChapter(book, chNum, navDir = 0) {
     document.getElementById('welcomeCard').style.display = 'none';
     currentBook = book; currentChapterNum = chNum;
     currentChapter = `${book} ${chNum}`;
@@ -1136,18 +1171,22 @@
     document.getElementById('prevBtn').disabled = chNum <= 1;
     document.getElementById('nextBtn').disabled = chNum >= maxCh;
     closeMenu();
-    loadSummary(book, chNum);
-    if (currentView === 'split' || currentView === 'scripture') loadChapter();
+    loadSummary(book, chNum, navDir);
+    if (currentView === 'split' || currentView === 'scripture') loadChapter(navDir);
     initCqSection();
     localStorage.setItem('last-book', book);
     localStorage.setItem('last-chapter', chNum);
+    if (!localStorage.getItem('swipe-hint-shown')) {
+      localStorage.setItem('swipe-hint-shown', '1');
+      setTimeout(() => showToast('💡 Tip: swipe left or right to change chapters'), 1200);
+    }
     // Track chapter open
     logEvent('chapter_opened', { book, chapter: chNum });
     db.ref(`stats/chapters/${book.replace(/ /g,'_')}_${chNum}`).transaction(n => (n||0)+1);
   }
 
   // ── Summary ───────────────────────────────────────────────────
-  async function loadSummary(book, chNum) {
+  async function loadSummary(book, chNum, navDir = 0) {
     const msgEl  = document.getElementById('summaryText');
     const contEl = document.getElementById('summaryContent');
     const mdKey  = summaryKeyFor(book);
@@ -1172,6 +1211,7 @@
       contEl.querySelectorAll('blockquote').forEach(bq => {
         if (bq.textContent.includes('🙏')) bq.classList.add('prayer-block');
       });
+      playSlideTransition(contEl, navDir);
     } catch(err) {
       msgEl.style.display='block';
       msgEl.innerText=`Could not load summary for ${book} ${chNum}.\n${err.message}`;
@@ -1216,7 +1256,7 @@
   }
 
   // ── Bible text from local JSON ────────────────────────────────
-  async function loadChapter() {
+  async function loadChapter(navDir = 0) {
     if (!currentBook) return;
     const content = document.getElementById('chapterContent');
     const version = document.getElementById('versionSelect').value;
@@ -1234,6 +1274,7 @@
       } else {
         content.innerHTML = `<p style="color:#888;font-style:italic">No verses found for ${esc(currentChapter)} in ${version.toUpperCase()}.</p>`;
       }
+      playSlideTransition(content, navDir);
     } catch(err) {
       content.innerHTML = `<p style="color:red"><strong>Could not load ${esc(currentChapter)}</strong><br><small>${esc(err.message)}</small></p>`;
     }
@@ -1250,10 +1291,41 @@
     if (next<1||next>maxCh) return;
     const chList = document.querySelector('.chapter-list');
     if (chList) {
+      chList.querySelectorAll('li').forEach(x => x.classList.remove('selected'));
       const t = chList.querySelectorAll('li')[next-1];
-      if (t) { t.click(); return; }
+      if (t) t.classList.add('selected');
     }
-    selectChapter(currentBook, next);
+    selectChapter(currentBook, next, dir);
+  }
+
+  // ── Slide transition + swipe navigation ─────────────────────────
+  function playSlideTransition(el, navDir) {
+    if (!el || navDir === 0) return;
+    el.classList.remove('slide-in-next', 'slide-in-prev');
+    void el.offsetWidth; // force reflow so the animation restarts every time
+    el.classList.add(navDir > 0 ? 'slide-in-next' : 'slide-in-prev');
+  }
+
+  function attachSwipeNav(el) {
+    if (!el) return;
+    let startX = 0, startY = 0, tracking = false;
+    el.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      const THRESHOLD = 70;
+      if (Math.abs(dx) > THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx < 0) navigateChapter(1);   // swipe left  -> next chapter
+        else        navigateChapter(-1);  // swipe right -> previous chapter
+      }
+    }, { passive: true });
   }
 
   let searchTimer = null;
@@ -2337,6 +2409,8 @@ ${APP_CREDIT}`;
 
   showBooks('old');
   initWelcomeCard();
+  attachSwipeNav(document.getElementById('leftPanel'));
+  attachSwipeNav(document.getElementById('rightPanel'));
   window.addEventListener('load', () => {
     setTimeout(checkForUpdates, 2000);
     setTimeout(checkForNewSummaries, 2500);
