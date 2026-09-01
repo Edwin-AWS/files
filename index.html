@@ -386,6 +386,82 @@
     }
     .summary-share-btn:hover{background:var(--gold);color:#1c2b3a;border-color:var(--gold);}
 
+    /* ── Verse reference links inside summaries ──────────────── */
+    .verse-ref-link{
+      color:var(--gold);text-decoration:underline;text-decoration-style:dotted;
+      cursor:pointer;font-weight:600;
+    }
+    .verse-ref-link:hover{opacity:.8;}
+
+    /* ── Summary word search ──────────────────────────────────── */
+    .summary-search-btn{
+      background:transparent;border:1px solid var(--border-color);
+      color:var(--text-secondary);padding:6px 10px;border-radius:6px;
+      cursor:pointer;font-size:12px;font-family:Arial,sans-serif;
+      margin-bottom:12px;margin-left:8px;
+    }
+    .summary-search-btn:hover{background:var(--gold);color:#1c2b3a;border-color:var(--gold);}
+    .summary-search-bar{
+      display:none;align-items:center;gap:6px;
+      background:var(--bg-secondary);border:1px solid var(--border-color);
+      border-radius:8px;padding:8px 10px;margin-bottom:14px;
+      font-family:Arial,sans-serif;
+    }
+    .summary-search-bar.show{display:flex;}
+    .summary-search-bar input{
+      flex:1;border:none;background:transparent;color:var(--text-primary);
+      font-size:14px;outline:none;font-family:'Lora',Georgia,serif;
+    }
+    .summary-search-count{font-size:12px;color:var(--text-secondary);white-space:nowrap;}
+    .summary-search-bar button{
+      background:transparent;border:none;cursor:pointer;color:var(--text-secondary);
+      font-size:16px;padding:2px 6px;
+    }
+    .summary-search-bar button:hover{color:var(--gold);}
+    mark.summary-search-hit{background:#fff176;color:#000;border-radius:2px;}
+    mark.summary-search-hit.current{background:#ff9800;color:#fff;}
+    body.dark-mode mark.summary-search-hit{background:#5a5000;color:#fff;}
+    body.dark-mode mark.summary-search-hit.current{background:#c66900;color:#fff;}
+
+    /* ── Summary text highlighting ────────────────────────────── */
+    mark.user-highlight{
+      background:#fff9c4;color:inherit;border-radius:2px;padding:0 1px;
+      cursor:pointer;
+    }
+    body.dark-mode mark.user-highlight{background:#4a4420;}
+    .highlight-fab{
+      position:fixed;z-index:10004;display:none;
+      background:var(--accent);color:#fff;border:1px solid var(--gold);
+      border-radius:20px;padding:9px 16px;font-size:13px;font-weight:bold;
+      cursor:pointer;font-family:Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.3);
+    }
+    .highlight-fab.show{display:block;}
+
+    /* ── Verse reference popup ────────────────────────────────── */
+    .verse-ref-overlay{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+      z-index:10005;align-items:center;justify-content:center;padding:20px;
+    }
+    .verse-ref-overlay.show{display:flex;}
+    .verse-ref-modal{
+      background:var(--bg-primary);border-radius:12px;
+      max-width:420px;width:100%;padding:22px 20px;
+      box-shadow:0 12px 40px rgba(0,0,0,.3);
+      border-top:4px solid var(--gold);position:relative;
+      font-family:'Lora',Georgia,serif;
+    }
+    .verse-ref-modal .modal-close{
+      position:absolute;top:10px;right:12px;background:transparent;border:none;
+      font-size:18px;cursor:pointer;color:var(--text-secondary);
+    }
+    .verse-ref-ref{
+      font-size:11px;text-transform:uppercase;letter-spacing:.1em;
+      color:var(--gold);font-family:Arial,sans-serif;font-weight:bold;margin-bottom:12px;
+    }
+    .verse-ref-text{font-size:16px;line-height:1.8;color:var(--text-primary);}
+    .verse-ref-text .vr-num{color:var(--gold);font-weight:bold;font-size:.8em;margin-right:4px;}
+
+
     /* ── Toast notification ──────────────────────────────────── */
     .copy-toast{
       position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
@@ -728,7 +804,17 @@
   <div class="left" id="leftPanel">
     <div class="panel-heading" style="display:flex;align-items:center;justify-content:space-between;">
       <span>Scripture Summary</span>
-      <button class="summary-share-btn" id="summaryShareBtn" onclick="shareSummary()" style="display:none;">↗ Share Summary</button>
+      <span>
+        <button class="summary-search-btn" id="summarySearchToggleBtn" onclick="toggleSummarySearch()" style="display:none;">🔍 Find</button>
+        <button class="summary-share-btn" id="summaryShareBtn" onclick="shareSummary()" style="display:none;">↗ Share Summary</button>
+      </span>
+    </div>
+    <div class="summary-search-bar" id="summarySearchBar">
+      <input type="text" id="summarySearchInput" placeholder="Search this summary…" oninput="performSummarySearch()">
+      <span class="summary-search-count" id="summarySearchCount"></span>
+      <button onclick="summarySearchStep(-1)" title="Previous">↑</button>
+      <button onclick="summarySearchStep(1)" title="Next">↓</button>
+      <button onclick="closeSummarySearch()" title="Close">✕</button>
     </div>
     <div class="nav-buttons">
       <button class="nav-btn" id="prevBtn" onclick="navigateChapter(-1)" disabled>← Previous</button>
@@ -960,16 +1046,36 @@
   const KNOWN_BOOKS_KEY   = 'known-summary-books';
   const LAST_PROBE_KEY    = 'last-summary-probe';
   const PROBE_INTERVAL_MS = 12 * 60 * 60 * 1000; // don't hammer the server more than every 12h
+  function getProbeTargets() {
+    const allBooks = [...Object.keys(bibleStructure.old), ...Object.keys(bibleStructure.new)];
+    const targets = [];
+    for (const book of allBooks) {
+      const segments = BOOK_SPLITS[book];
+      if (segments) {
+        for (const seg of segments) {
+          targets.push({
+            id: `${book}:${seg.start}-${seg.end}`,
+            label: `${book} ${seg.start}–${seg.end}`,
+            url: `${S3_BASE_URL}/summaries/${seg.file}.md`,
+          });
+        }
+      } else {
+        targets.push({ id: book, label: book, url: `${S3_BASE_URL}/summaries/${summaryKeyFor(book)}.md` });
+      }
+    }
+    return targets;
+  }
+
   async function checkForNewSummaries() {
     try {
       const lastProbe = parseInt(localStorage.getItem(LAST_PROBE_KEY) || '0');
       if (Date.now() - lastProbe < PROBE_INTERVAL_MS) return;
 
-      const allBooks = [...Object.keys(bibleStructure.old), ...Object.keys(bibleStructure.new)];
-      const results = await Promise.all(allBooks.map(async book => {
+      const targets = getProbeTargets();
+      const results = await Promise.all(targets.map(async t => {
         try {
-          const r = await fetch(`${S3_BASE_URL}/summaries/${summaryKeyFor(book)}.md`, { method: 'HEAD' });
-          return r.ok ? book : null;
+          const r = await fetch(t.url, { method: 'HEAD' });
+          return r.ok ? t.id : null;
         } catch(e) { return null; }
       }));
       const available = results.filter(Boolean);
@@ -980,19 +1086,19 @@
 
       if (knownRaw === null) return; // first run on this device — nothing to compare against yet
       const known = JSON.parse(knownRaw);
-      const newlyAvailable = available.filter(b => !known.includes(b));
-      if (!newlyAvailable.length) return;
+      const newlyAvailableIds = available.filter(id => !known.includes(id));
+      if (!newlyAvailableIds.length) return;
 
-      showUpdateToast(newlyAvailable);
+      const newTargets = targets.filter(t => newlyAvailableIds.includes(t.id));
+      showUpdateToast(newTargets.map(t => t.label));
 
-      // Pre-cache the new book(s) so they're ready offline immediately,
+      // Pre-cache the new content so it's ready offline immediately,
       // instead of waiting for someone to open that chapter first.
       const cache = await caches.open(CACHE_NAME);
-      for (const book of newlyAvailable) {
-        const url = `${S3_BASE_URL}/summaries/${summaryKeyFor(book)}.md`;
+      for (const t of newTargets) {
         try {
-          const resp = await fetch(url);
-          if (resp.ok) await cache.put(url, resp.clone());
+          const resp = await fetch(t.url);
+          if (resp.ok) await cache.put(t.url, resp.clone());
         } catch(e) {}
       }
     } catch(e) { console.log('Summary probe skipped:', e.message); }
@@ -1047,12 +1153,124 @@
   };
   const singleChapterBooks = {"Obadiah":21,"Philemon":25,"2 John":13,"3 John":14,"Jude":25};
 
+  // ── Verse reference links inside summaries ──────────────────────
+  // Build a regex that matches real canonical book names (longest first, so
+  // "1 Chronicles" matches before "Chronicles" would) followed by a
+  // chapter:verse citation, e.g. "Job 1:5", "1 Chronicles 15:2, 11-14",
+  // "2 Peter 3:13; Revelation 21:1" (matches each ref independently).
+  // Built lazily on first use since it depends on escRe, defined later below.
+  let _verseRefRe = null;
+  function getVerseRefRegex() {
+    if (_verseRefRe) return _verseRefRe;
+    const allBookNames = [...Object.keys(bibleStructure.old), ...Object.keys(bibleStructure.new)]
+      .sort((a, b) => b.length - a.length);
+    _verseRefRe = new RegExp(
+      '\\b(' + allBookNames.map(escRe).join('|') + ')\\s(\\d{1,3}):(\\d{1,3}(?:[-–,]\\s?\\d{1,3})*)\\b',
+      'g'
+    );
+    return _verseRefRe;
+  }
+
+  function linkifyVerseRefs(html) {
+    // Only rewrite text between tags, never inside a tag's attributes, so we
+    // don't corrupt existing markup (links, em/strong from citations, etc).
+    const re = getVerseRefRegex();
+    return html.split(/(<[^>]+>)/).map(chunk => {
+      if (chunk.startsWith('<')) return chunk;
+      return chunk.replace(re, (match, book, chapter, verses) => {
+        const ref = `${book} ${chapter}:${verses}`;
+        return `<span class="verse-ref-link" data-ref="${esc(ref)}">${match}</span>`;
+      });
+    }).join('');
+  }
+
+  function expandVerseList(versesStr) {
+    // "2, 11-14" -> [2, 11, 12, 13, 14]
+    const out = [];
+    versesStr.split(',').forEach(part => {
+      part = part.trim();
+      const range = part.match(/^(\d+)[-–](\d+)$/);
+      if (range) {
+        const start = parseInt(range[1]), end = parseInt(range[2]);
+        for (let v = start; v <= end; v++) out.push(v);
+      } else if (/^\d+$/.test(part)) {
+        out.push(parseInt(part));
+      }
+    });
+    return out;
+  }
+
+  async function openVerseRefPopup(ref) {
+    const overlay  = document.getElementById('verseRefOverlay');
+    const titleEl  = document.getElementById('verseRefTitle');
+    const textEl   = document.getElementById('verseRefText');
+    titleEl.textContent = ref;
+    textEl.textContent = 'Loading…';
+    overlay.classList.add('show');
+    const m = ref.match(/^(.+?)\s(\d{1,3}):(.+)$/);
+    if (!m) { textEl.textContent = "Couldn't parse that reference."; return; }
+    const [, book, chapterStr, versesStr] = m;
+    const chapter = parseInt(chapterStr);
+    const wantedVerses = expandVerseList(versesStr);
+    try {
+      const version = document.getElementById('versionSelect').value;
+      const bible = await loadBibleVersion(version);
+      const jsonBook = book === 'Psalms' ? 'Psalm' : book;
+      const verses = bible[`${jsonBook}:${chapter}`] || bible[`${jsonBook.replace(/ /g,'')}:${chapter}`];
+      if (!verses || !verses.length) { textEl.textContent = `Couldn't find ${ref} in ${version.toUpperCase()}.`; return; }
+      const matched = wantedVerses.length
+        ? verses.filter(v => wantedVerses.includes(v.verse))
+        : verses;
+      if (!matched.length) { textEl.textContent = `Couldn't find those verses in ${version.toUpperCase()}.`; return; }
+      textEl.innerHTML = matched
+        .sort((a,b) => a.verse - b.verse)
+        .map(v => `<span class="vr-num">${v.verse}</span>${esc(v.text)}`)
+        .join(' ');
+    } catch(err) {
+      textEl.textContent = `Couldn't load that verse: ${err.message}`;
+    }
+  }
+
+  function closeVerseRefPopup() {
+    document.getElementById('verseRefOverlay').classList.remove('show');
+  }
+
+  // Event delegation: catches clicks on any .verse-ref-link, even ones
+  // inserted after page load (new chapters, new summaries).
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('.verse-ref-link');
+    if (link) openVerseRefPopup(link.dataset.ref);
+  });
+
   // A book's summary file is just its display name with spaces removed
   // (e.g. "2 Kings" -> "2Kings.md", "Nehemiah" -> "Nehemiah.md"). This means
   // uploading a new SummaryBookName.md to the /summaries/ folder is enough —
   // no code or version.json edits are needed for it to show up in the app.
   function summaryKeyFor(book) {
     return book.replace(/\s+/g, '');
+  }
+
+  // Some books are too long to keep as one file (Psalms' 150 chapters, for
+  // example). List a book here to serve it from multiple smaller files
+  // instead of one — each entry is a chapter range mapped to its own file
+  // name. Chapter 1 of a split book must live in its FIRST segment, since
+  // that's the only segment the app ever looks in for the "## Introduction"
+  // section. Any book not listed here uses the normal single-file lookup.
+  const BOOK_SPLITS = {
+    "Psalms": [
+      { file: "Psalms_1-50",   start: 1,   end: 50  },
+      { file: "Psalms_51-100", start: 51,  end: 100 },
+      { file: "Psalms_101-150",start: 101, end: 150 },
+    ],
+  };
+
+  function summaryKeyForChapter(book, chNum) {
+    const segments = BOOK_SPLITS[book];
+    if (segments) {
+      const seg = segments.find(s => chNum >= s.start && chNum <= s.end);
+      if (seg) return seg.file;
+    }
+    return summaryKeyFor(book);
   }
 
   marked.setOptions({breaks:true, gfm:true});
@@ -1189,7 +1407,7 @@
   async function loadSummary(book, chNum, navDir = 0) {
     const msgEl  = document.getElementById('summaryText');
     const contEl = document.getElementById('summaryContent');
-    const mdKey  = summaryKeyFor(book);
+    const mdKey  = summaryKeyForChapter(book, chNum);
     msgEl.style.display='block'; msgEl.innerText='Loading summary…';
     contEl.style.display='none';
     try {
@@ -1198,19 +1416,23 @@
         const r   = await fetch(url);
         if (r.status === 404) {
           contEl.style.display='none'; msgEl.style.display='block';
-          msgEl.innerText=`Summaries for ${book} are coming soon!`; showSummaryShareBtn(false); return;
+          const seg = (BOOK_SPLITS[book] || []).find(s => chNum >= s.start && chNum <= s.end);
+          const label = seg ? `${book} ${seg.start}–${seg.end}` : book;
+          msgEl.innerText=`Summaries for ${label} are coming soon!`; showSummaryShareBtn(false); return;
         }
         if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
         summaryCache[mdKey] = await r.text();
       }
       const html = extractChapterHtml(summaryCache[mdKey], book, chNum);
       msgEl.style.display='none'; contEl.style.display='block';
-      contEl.innerHTML=html; contEl.scrollTop=0;
+      contEl.innerHTML=linkifyVerseRefs(html); contEl.scrollTop=0;
       document.getElementById('leftPanel').scrollTop=0;
       showSummaryShareBtn(true);
       contEl.querySelectorAll('blockquote').forEach(bq => {
         if (bq.textContent.includes('🙏')) bq.classList.add('prayer-block');
       });
+      restoreSummaryHighlights(book, chNum);
+      closeSummarySearch();
       playSlideTransition(contEl, navDir);
     } catch(err) {
       msgEl.style.display='block';
@@ -1594,6 +1816,9 @@
     const handler = ref.on('value', snap => {
       const data = snap.val() || {};
       renderCqThread(data);
+    }, err => {
+      console.error('Firebase read failed:', err);
+      thread.innerHTML = `<div class="cq-empty">⚠️ Couldn't load comments right now${err && err.code ? ` (${err.code})` : ''}. Check your connection and try again.</div>`;
     });
     cqListener = () => ref.off('value', handler);
   }
@@ -1829,6 +2054,121 @@
   }
   function verseKey(book, ch, verse) { return `${book}:${ch}:${verse}`; }
 
+  // ── Summary text highlighting ────────────────────────────────
+  function getSummaryHighlights() {
+    try { return JSON.parse(localStorage.getItem('summary-highlights') || '{}'); } catch(e) { return {}; }
+  }
+  function saveSummaryHighlights(data) {
+    localStorage.setItem('summary-highlights', JSON.stringify(data));
+  }
+
+  let pendingHighlightRange = null;
+
+  function initSummaryHighlighting() {
+    const contEl = document.getElementById('summaryContent');
+    const fab = document.getElementById('highlightFab');
+    const handleSelection = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
+        fab.classList.remove('show');
+        pendingHighlightRange = null;
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      const text = sel.toString().trim();
+      // Only offer highlighting for selections fully inside the summary content
+      if (!text || !contEl.contains(range.commonAncestorContainer)) {
+        fab.classList.remove('show');
+        pendingHighlightRange = null;
+        return;
+      }
+      pendingHighlightRange = range.cloneRange();
+      const rect = range.getBoundingClientRect();
+      fab.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 140)) + 'px';
+      fab.style.top  = Math.max(8, rect.top - 46) + 'px';
+      fab.classList.add('show');
+    };
+    contEl.addEventListener('mouseup', handleSelection);
+    contEl.addEventListener('touchend', () => setTimeout(handleSelection, 10));
+    document.addEventListener('mousedown', (e) => {
+      if (e.target.id === 'highlightFab') return;
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) fab.classList.remove('show');
+    });
+  }
+
+  function applySummaryHighlight() {
+    if (!pendingHighlightRange || !currentBook) { document.getElementById('highlightFab').classList.remove('show'); return; }
+    const range = pendingHighlightRange;
+    const text = range.toString().trim();
+    if (!text) return;
+    try {
+      const mark = document.createElement('mark');
+      mark.className = 'user-highlight';
+      range.surroundContents(mark);
+    } catch(e) {
+      // Selection spans multiple elements (e.g. crosses a paragraph boundary) —
+      // surroundContents can't wrap that in one go, so skip visually wrapping
+      // but still save the highlight text for the management list.
+    }
+    const data = getSummaryHighlights();
+    const id = 'sh_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+    data[id] = { book: currentBook, chapter: currentChapterNum, text, timestamp: Date.now() };
+    saveSummaryHighlights(data);
+    window.getSelection().removeAllRanges();
+    document.getElementById('highlightFab').classList.remove('show');
+    pendingHighlightRange = null;
+    showToast('🖍️ Highlighted!');
+  }
+
+  function restoreSummaryHighlights(book, chNum) {
+    const data = getSummaryHighlights();
+    const matches = Object.values(data).filter(h => h.book === book && h.chapter === chNum);
+    if (!matches.length) return;
+    const contEl = document.getElementById('summaryContent');
+    matches.forEach(h => {
+      wrapFirstTextMatch(contEl, h.text);
+    });
+  }
+
+  function wrapFirstTextMatch(root, needle) {
+    if (!needle) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => (n.parentElement && n.parentElement.tagName === 'MARK') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+    });
+    let node;
+    while ((node = walker.nextNode())) {
+      const idx = node.textContent.indexOf(needle);
+      if (idx === -1) continue;
+      const range = document.createRange();
+      range.setStart(node, idx);
+      range.setEnd(node, idx + needle.length);
+      try {
+        const mark = document.createElement('mark');
+        mark.className = 'user-highlight';
+        range.surroundContents(mark);
+      } catch(e) {}
+      return;
+    }
+  }
+
+  function deleteSummaryHighlight(id) {
+    const data = getSummaryHighlights();
+    delete data[id];
+    saveSummaryHighlights(data);
+    renderBhPanel();
+    // Refresh the visible summary so the removed highlight's <mark> disappears
+    if (currentBook) loadSummary(currentBook, currentChapterNum);
+  }
+
+  function navigateToSummaryHighlight(id) {
+    const data = getSummaryHighlights();
+    const h = data[id];
+    if (!h) return;
+    closeBhPanel();
+    selectChapter(h.book, h.chapter);
+  }
+
   // ── Build verse element ───────────────────────────────────────
   function buildVerseEl(v) {
     const el = document.createElement('div');
@@ -2004,6 +2344,103 @@ ${APP_CREDIT}`;
     document.getElementById('sharePopup').classList.add('show');
   }
 
+  // ── Summary word search ───────────────────────────────────────
+  let summarySearchMatches = [];
+  let summarySearchIndex = -1;
+
+  function toggleSummarySearch() {
+    const bar = document.getElementById('summarySearchBar');
+    if (bar.classList.contains('show')) { closeSummarySearch(); return; }
+    bar.classList.add('show');
+    const input = document.getElementById('summarySearchInput');
+    input.value = '';
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeSummarySearch() {
+    const bar = document.getElementById('summarySearchBar');
+    bar.classList.remove('show');
+    document.getElementById('summarySearchInput').value = '';
+    document.getElementById('summarySearchCount').textContent = '';
+    unwrapSummarySearchHits();
+    summarySearchMatches = [];
+    summarySearchIndex = -1;
+  }
+
+  function unwrapSummarySearchHits() {
+    document.querySelectorAll('#summaryContent mark.summary-search-hit').forEach(mark => {
+      const parent = mark.parentNode;
+      parent.replaceChild(document.createTextNode(mark.textContent), mark);
+      parent.normalize();
+    });
+  }
+
+  function performSummarySearch() {
+    unwrapSummarySearchHits();
+    summarySearchMatches = [];
+    summarySearchIndex = -1;
+    const query = document.getElementById('summarySearchInput').value.trim();
+    const countEl = document.getElementById('summarySearchCount');
+    if (!query) { countEl.textContent = ''; return; }
+
+    const contEl = document.getElementById('summaryContent');
+    const lowerQuery = query.toLowerCase();
+    const walker = document.createTreeWalker(contEl, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => (n.parentElement && n.parentElement.tagName === 'MARK') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+    });
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+
+    textNodes.forEach(textNode => {
+      const text = textNode.textContent;
+      const lowerText = text.toLowerCase();
+      let idx = 0, pos;
+      const pieces = [];
+      let lastEnd = 0;
+      while ((pos = lowerText.indexOf(lowerQuery, idx)) !== -1) {
+        pieces.push({ start: pos, end: pos + query.length });
+        idx = pos + query.length;
+      }
+      if (!pieces.length) return;
+      const frag = document.createDocumentFragment();
+      pieces.forEach(p => {
+        if (p.start > lastEnd) frag.appendChild(document.createTextNode(text.slice(lastEnd, p.start)));
+        const mark = document.createElement('mark');
+        mark.className = 'summary-search-hit';
+        mark.textContent = text.slice(p.start, p.end);
+        frag.appendChild(mark);
+        summarySearchMatches.push(mark);
+        lastEnd = p.end;
+      });
+      if (lastEnd < text.length) frag.appendChild(document.createTextNode(text.slice(lastEnd)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+
+    if (!summarySearchMatches.length) {
+      countEl.textContent = 'No matches';
+      return;
+    }
+    summarySearchIndex = 0;
+    updateSummarySearchFocus();
+  }
+
+  function updateSummarySearchFocus() {
+    summarySearchMatches.forEach(m => m.classList.remove('current'));
+    const countEl = document.getElementById('summarySearchCount');
+    if (!summarySearchMatches.length) { countEl.textContent = ''; return; }
+    const m = summarySearchMatches[summarySearchIndex];
+    m.classList.add('current');
+    m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    countEl.textContent = `${summarySearchIndex + 1}/${summarySearchMatches.length}`;
+  }
+
+  function summarySearchStep(dir) {
+    if (!summarySearchMatches.length) return;
+    summarySearchIndex = (summarySearchIndex + dir + summarySearchMatches.length) % summarySearchMatches.length;
+    updateSummarySearchFocus();
+  }
+
   function shareSummary() {
     shareMode = 'summary';
     const title = `${currentBook} ${currentChapterNum} — Bible Summary`;
@@ -2108,7 +2545,7 @@ ${APP_CREDIT}`;
 
   function openBhPanel(tab) {
     bhTab = tab || 'bookmarks';
-    ['bookmarks','notes','highlights'].forEach(t => {
+    ['bookmarks','notes','highlights','summaryhl'].forEach(t => {
       document.getElementById('bhtab-' + t).classList.toggle('active', t === bhTab);
     });
     renderBhPanel();
@@ -2123,7 +2560,7 @@ ${APP_CREDIT}`;
 
   function switchBhTab(tab) {
     bhTab = tab;
-    ['bookmarks','notes','highlights'].forEach(t => {
+    ['bookmarks','notes','highlights','summaryhl'].forEach(t => {
       document.getElementById('bhtab-' + t).classList.toggle('active', t === tab);
     });
     renderBhPanel();
@@ -2155,7 +2592,7 @@ ${APP_CREDIT}`;
           <div class="bh-item-text">${esc(data[k].verseText || '')}</div>
           <div class="bh-item-note">📝 ${esc(data[k].note)}</div>
         </div>`).join('');
-    } else {
+    } else if (bhTab === 'highlights') {
       const hl = keys.filter(k => data[k].highlight);
       if (!hl.length) { body.innerHTML = '<div class="bh-empty">No highlights yet.<br><small>Long-press any verse to highlight it.</small></div>'; return; }
       html = hl.map(k => `
@@ -2164,6 +2601,19 @@ ${APP_CREDIT}`;
           <div class="bh-item-ref">${data[k].ref || k}</div>
           <div class="bh-item-text" style="background:${colors[data[k].highlight]||''};padding:4px 6px;border-radius:4px;">${esc(data[k].verseText || '')}</div>
         </div>`).join('');
+    } else {
+      const sh = getSummaryHighlights();
+      const shKeys = Object.keys(sh);
+      if (!shKeys.length) { body.innerHTML = '<div class="bh-empty">No summary highlights yet.<br><small>Select any line in a chapter summary to highlight it.</small></div>'; return; }
+      html = shKeys.map(id => {
+        const h = sh[id];
+        return `
+        <div class="bh-item" style="border-left-color:#fff176" onclick="navigateToSummaryHighlight('${id}')">
+          <button class="bh-item-del" onclick="event.stopPropagation();deleteSummaryHighlight('${id}')">🗑</button>
+          <div class="bh-item-ref">${esc(h.book)} ${h.chapter}</div>
+          <div class="bh-item-text" style="background:#fff9c4;padding:4px 6px;border-radius:4px;">${esc(h.text)}</div>
+        </div>`;
+      }).join('');
     }
     body.innerHTML = html;
   }
@@ -2226,6 +2676,9 @@ ${APP_CREDIT}`;
   function showSummaryShareBtn(show) {
     const btn = document.getElementById('summaryShareBtn');
     if (btn) btn.style.display = show ? 'inline-flex' : 'none';
+    const searchBtn = document.getElementById('summarySearchToggleBtn');
+    if (searchBtn) searchBtn.style.display = show ? 'inline-block' : 'none';
+    if (!show) closeSummarySearch();
   }
 
 
@@ -2411,6 +2864,7 @@ ${APP_CREDIT}`;
   initWelcomeCard();
   attachSwipeNav(document.getElementById('leftPanel'));
   attachSwipeNav(document.getElementById('rightPanel'));
+  initSummaryHighlighting();
   window.addEventListener('load', () => {
     setTimeout(checkForUpdates, 2000);
     setTimeout(checkForNewSummaries, 2500);
@@ -2485,6 +2939,7 @@ ${APP_CREDIT}`;
     <button class="bh-tab active" id="bhtab-bookmarks"  onclick="switchBhTab('bookmarks')">🔖 Bookmarks</button>
     <button class="bh-tab"        id="bhtab-notes"      onclick="switchBhTab('notes')">📝 Notes</button>
     <button class="bh-tab"        id="bhtab-highlights" onclick="switchBhTab('highlights')">🟡 Highlights</button>
+    <button class="bh-tab"        id="bhtab-summaryhl"  onclick="switchBhTab('summaryhl')">🖍️ Summary</button>
   </div>
   <div class="bh-body" id="bhBody"></div>
   <button class="bh-export" onclick="exportAnnotations()">⬇ Export All</button>
@@ -2495,6 +2950,18 @@ ${APP_CREDIT}`;
 
 <!-- Hidden canvas for image share -->
 <canvas id="shareCanvas" style="display:none;"></canvas>
+
+<!-- Summary highlight floating action button -->
+<button class="highlight-fab" id="highlightFab" onclick="applySummaryHighlight()">🖍️ Highlight</button>
+
+<!-- Verse reference popup (for refs clicked inside a summary) -->
+<div class="verse-ref-overlay" id="verseRefOverlay" onclick="if(event.target===this) closeVerseRefPopup()">
+  <div class="verse-ref-modal">
+    <button class="modal-close" onclick="closeVerseRefPopup()">✕</button>
+    <div class="verse-ref-ref" id="verseRefTitle">Reference</div>
+    <div class="verse-ref-text" id="verseRefText">Loading…</div>
+  </div>
+</div>
 
 
 <!-- Font size control sheet -->
