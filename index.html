@@ -1540,6 +1540,10 @@
     el.addEventListener('touchend', e => {
       if (!tracking) return;
       tracking = false;
+      // A text-selection drag (e.g. selecting a line to highlight) looks
+      // identical to a horizontal swipe -- don't hijack it into navigation.
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && sel.toString().trim()) return;
       const dx = e.changedTouches[0].clientX - startX;
       const dy = e.changedTouches[0].clientY - startY;
       const THRESHOLD = 70;
